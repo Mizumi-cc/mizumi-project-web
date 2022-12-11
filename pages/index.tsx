@@ -6,7 +6,7 @@ export default function Home() {
       <Head>
         <title>Mizumi Project</title>
       </Head>
-      <h1 className="text-[40px] text-purple-400 font-bold">Mizumi Project</h1>
+      <h1 className="text-[40px] text-purple-400">Mizumi Project</h1>
     </main>
   )
 }
