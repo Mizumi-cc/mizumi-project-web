@@ -20,7 +20,7 @@ const HTMLHead = ({
   addDefaultMeta = true,
 }: HTMLHeadProps) => {
   const metaTitle = title ? title : 'Mizumi Inc.'
-  const metaDescription = description ? description : 'Mizumi Inc.'
+  const metaDescription = description ? description : 'Mizumi is a decentralised exchange for stable-coin and national currency swaps. We are building a bridge between the crypto and traditional financial worlds.'
   const metaSocialShareImage = socialShareImage ? socialShareImage : 'https://mizumi.cc/img/mizumi-text.png'
   const metaTwitter = 'https://twitter.com/MizumiInc'
   const metaSocialShareUrl = socialShareUrl ? socialShareUrl : metaTwitter
@@ -89,7 +89,8 @@ const HTMLHead = ({
     {
       name: 'keywords',
       content: 'Mizumi, Inc., Mizumi, Mizumi Inc, Mizumi Inc., Mizumi Inc, Mizumi Inc., stablecoin - fiat swaps, decentralized, crypto, Solana, Solana blockchain, Africa'
-    }
+    },
+    
     ...meta
   ]
 
