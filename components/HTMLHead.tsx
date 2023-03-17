@@ -3,8 +3,8 @@ import { MetaTag } from "next-seo/lib/types"
 import Head from "next/head"
 
 interface HTMLHeadProps {
-  title: string
-  description: string
+  title?: string
+  description?: string
   meta?: ReadonlyArray<MetaTag>
   socialShareImage?: string
   socialShareUrl?: string
@@ -90,11 +90,11 @@ const HTMLHead = ({
       name: 'keywords',
       content: 'Mizumi, Inc., Mizumi, Mizumi Inc, Mizumi Inc., Mizumi Inc, Mizumi Inc., stablecoin - fiat swaps, decentralized, crypto, Solana, Solana blockchain, Africa'
     },
-    
+
     ...meta
   ]
 
-  return [
+  return (
     <>
       <NextSeo 
         {...(addDefaultMeta && { metaTitle })}
@@ -128,7 +128,7 @@ const HTMLHead = ({
         <link rel="manifest" href="/site.webmanifest"></link>
       </Head>
     </>
-  ]
+  )
 }
 
 export default HTMLHead

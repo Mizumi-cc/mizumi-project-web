@@ -1,15 +1,19 @@
-/* eslint-disable @next/next/no-img-element */
-import Head from "next/head"
+import Image from "next/image"
+
+// components
+import HTMLHead from "../components/HTMLHead"
 
 export default function Home() {
   return (
     <main className='min-h-screen flex flex-col justify-center items-center bg-white'>
-      <Head>
-        <title>Mizumi Inc.</title>
-      </Head>
-      <img 
-        src="img/mizumi-text.png"
-        alt=""
+      <HTMLHead />
+      <Image 
+        src='/img/mizumi-text.png'
+        alt='Mizumi Inc.'
+        width={0}
+        height={0}
+        sizes={'100vw'}
+        style={{objectFit: 'contain', height: 'auto'}}
         className="w-1/3"
       />
     </main>
