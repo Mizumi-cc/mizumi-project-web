@@ -8,7 +8,7 @@ export default function Home() {
     <main className='min-h-screen flex flex-col justify-center items-center bg-white'>
       <HTMLHead />
       <Image 
-        src='/img/mizumi-text.png'
+        src='/assets/img/mizumi-text.png'
         alt='Mizumi Inc.'
         width={0}
         height={0}
