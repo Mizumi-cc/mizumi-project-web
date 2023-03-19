@@ -7,7 +7,7 @@ interface ImageProps {
 }
 
 interface LogoProps {
-  image?: ImageProps
+  image: ImageProps
   mode?: 'dark' | 'light'
   href?: string
 }
@@ -17,17 +17,17 @@ const Logo = ({
 }: LogoProps) => {
 
   return (
-    <Link href={href!} prefetch={false}>
+    <a href={href}>
       <Image 
         src={mode === "light" ? image!.black : image!.white}
         alt="Logo"
-        width={0}
-        height={0}
+        width={140}
+        height={140}
         sizes={'100vw'}
         style={{objectFit: 'contain', height: 'auto'}}
-        className="cursor-pointer transition ease-in-out hover:opacity-100 "
+        className="cursor-pointer transition ease-in-out hover:opacity-100"
       />
-    </Link>
+    </a>
   )
 }
 
