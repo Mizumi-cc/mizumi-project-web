@@ -1,4 +1,6 @@
 import { useState } from "react"
+import { useWallet } from "@solana/wallet-adapter-react"
+import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 
 // components
 import HTMLHead from "../components/HTMLHead"
@@ -7,10 +9,28 @@ import SwapBox from "../components/SwapBox"
 import CardCheckoutModal from "../components/CardCheckoutModal"
 
 export default function Home() {
+  const { connected } = useWallet()
+  const { setVisible } = useWalletModal()
+
+  const [busy, setBusy] = useState<boolean>(false)
   const [showCheckoutModal, setShowCheckoutModal] = useState(true)
+
+  const handleSwapOrConnectClick = (data: any) => {
+    if (!connected) {
+      setVisible(true)
+      return
+    }
+    setBusy(true)
+    setShowCheckoutModal(true)
+  }
 
   const completeCheckout = async () => {
 
+  }
+
+  const closeCheckoutModal = () => {
+    setBusy(false)
+    setShowCheckoutModal(false)
   }
 
   return (
@@ -19,13 +39,14 @@ export default function Home() {
       <Header />
       <div className="justify-center items-center flex h-full pt-32">
         <SwapBox 
-          openCheckoutMModal={() => setShowCheckoutModal(true)}
+          busy={busy}
+          onSubmit={handleSwapOrConnectClick}
         />
       </div>
       <CardCheckoutModal 
         isOpen={showCheckoutModal}
-        onClose={() => setShowCheckoutModal(false)}
-        submit={completeCheckout}
+        onClose={closeCheckoutModal}
+        onSubmit={completeCheckout}
       />
     </main>
   )

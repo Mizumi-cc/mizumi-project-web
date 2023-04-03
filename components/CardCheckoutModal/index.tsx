@@ -4,13 +4,13 @@ import { PaymentInputsWrapper, usePaymentInputs } from "react-payment-inputs"
 import images from "react-payment-inputs/images"
 
 interface CardCheckoutModalProps {
-  submit: (data: any) => void
+  onSubmit: (data: any) => void
   isOpen: boolean
   onClose: () => void
 }
 
 const CardCheckoutModal: FunctionComponent<CardCheckoutModalProps> = ({
-  submit, isOpen, onClose
+  onSubmit, isOpen, onClose
 }) => {
   const {
     wrapperProps,
@@ -117,7 +117,7 @@ const CardCheckoutModal: FunctionComponent<CardCheckoutModalProps> = ({
                     type="button"
                     disabled={checkForm()}
                     className={`bg-gradient-to-r ${!checkForm() ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} w-full h-[50px] rounded-lg`}
-                    onClick={onClose}
+                    onClick={onSubmit}
                   >
                     <div className="w-full h-full bg-black rounded-lg flex justify-center items-center text-white font-bold text-md">
                       Pay

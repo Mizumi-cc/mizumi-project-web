@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react"
 import { ArrowsUpDownIcon } from "@heroicons/react/20/solid"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { AnimatePresence } from "framer-motion"
 import { PublicKey } from "@solana/web3.js"
 
@@ -12,14 +11,15 @@ import { Currency } from "../CurrencyListbox"
 import type { Bank } from "../BankInfoInput"
 import BankInfoInput from "../BankInfoInput"
 import WalletInput from "../WalletInput"
+import Loading from "../Loading"
 
 interface SwapBoxProps {
-  openCheckoutMModal: () => void
+  busy: boolean
+  onSubmit: (data: any) => void
 }
 
-const SwapBox = ({ openCheckoutMModal }: SwapBoxProps) => {
+const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   const { connected } = useWallet()
-  const { setVisible } = useWalletModal()
 
   const [inputValue, setInputValue] = useState(0)
   const [showCheckout, setShowCheckout] = useState<boolean>(false)
@@ -30,12 +30,6 @@ const SwapBox = ({ openCheckoutMModal }: SwapBoxProps) => {
   const [accountName, setAccountName] = useState('')
   const [addressIsValid, setAddressIsValid] = useState(false)
   const [creditAddress, setCreditAddress] = useState<string>('')
-
-  const handleSwapOrConnectClick = () => {
-    if (!connected) {
-      setVisible(true)
-    }
-  }
 
   const switchCurrencies = () => {
     setDebitCurrency(creditCurrency)
@@ -105,11 +99,12 @@ const SwapBox = ({ openCheckoutMModal }: SwapBoxProps) => {
         </AnimatePresence>
       </div>
       <button
-        onClick={handleSwapOrConnectClick}
+        onClick={onSubmit}
+        disabled={busy}
         className={`w-[448px] bg-gradient-to-r ${connected ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
       >
         <div className="w-full h-full bg-black rounded-lg flex justify-center items-center">
-          <p className="text-white font-bold text-md">{connected ? 'Swap' : 'Connect Wallet'}</p>
+          {busy ? <Loading /> : <p className="text-white font-bold text-md">{connected ? 'Swap' : 'Connect Wallet'}</p>}
         </div>
       </button>
     </div>
