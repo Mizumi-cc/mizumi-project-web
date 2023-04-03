@@ -14,14 +14,15 @@ import BankInfoInput from "../BankInfoInput"
 import WalletInput from "../WalletInput"
 
 interface SwapBoxProps {
-  openPaymentDetailsMModal: () => void
+  openCheckoutMModal: () => void
 }
 
-const SwapBox = ({ openPaymentDetailsMModal }: SwapBoxProps) => {
+const SwapBox = ({ openCheckoutMModal }: SwapBoxProps) => {
   const { connected } = useWallet()
   const { setVisible } = useWalletModal()
 
   const [inputValue, setInputValue] = useState(0)
+  const [showCheckout, setShowCheckout] = useState<boolean>(false)
   const [debitCurrency, setDebitCurrency] = useState<Currency>(CURRENCIES[0])
   const [creditCurrency, setCreditCurrency] = useState<Currency>(CURRENCIES[1])
   const [selectedBank, setSelectedBank] = useState<Bank>(banks[1])
