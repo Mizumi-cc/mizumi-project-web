@@ -89,13 +89,15 @@ const BankInfoInput: FunctionComponent<Props> = ({
       <input 
         type="number"
         max={13}
-        className="rounded-lg bg-black py-4 text-white outline-none px-3 sm:text-sm font-medium"
+        placeholder="Account Number"
+        className="rounded-lg bg-black py-4 text-white outline-none px-3 sm:text-sm font-medium text-lg"
         value={accountNumber}
         onChange={e => onAccountNumberChange(e.target.value)}
       />
       <input 
         type="text"
-        className="rounded-lg bg-black py-4 text-white outline-none px-3 sm:text-sm font-medium"
+        placeholder="Account Name"
+        className="rounded-lg bg-black py-4 text-white outline-none px-3 sm:text-sm font-medium text-lg"
         value={accountName}
         onChange={e => onAccountNameChange(e.target.value)}
       />
