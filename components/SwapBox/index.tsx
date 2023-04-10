@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { ArrowsUpDownIcon } from "@heroicons/react/20/solid"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { AnimatePresence } from "framer-motion"
@@ -15,14 +15,26 @@ import Loading from "../Loading"
 
 interface SwapBoxProps {
   busy: boolean
-  onSubmit: (data: any) => void
+  onSubmit: (data: SwapData) => void
+}
+
+export interface SwapData {
+  debitAmount: number
+  debitCurrency: Currency
+  creditCurrency: Currency
+  debitType: 'Fiat' | 'Crypto'
+  creditInfo: {
+    bankName?: string
+    accountNumber?: string
+    accountName?: string
+    walletAddress?: string
+  }
 }
 
 const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   const { connected } = useWallet()
 
   const [inputValue, setInputValue] = useState(0)
-  const [showCheckout, setShowCheckout] = useState<boolean>(false)
   const [debitCurrency, setDebitCurrency] = useState<Currency>(CURRENCIES[0])
   const [creditCurrency, setCreditCurrency] = useState<Currency>(CURRENCIES[1])
   const [selectedBank, setSelectedBank] = useState<Bank>(banks[1])
@@ -30,10 +42,42 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   const [accountName, setAccountName] = useState('')
   const [addressIsValid, setAddressIsValid] = useState(false)
   const [creditAddress, setCreditAddress] = useState<string>('')
+  const [payoutAmount, setPayoutAmount] = useState<number>(0)
+
+  const firstCurrencyList = useMemo(() => {
+    if (creditCurrency.symbol === 'GHS')  {
+      return CURRENCIES.filter((currency) => currency.symbol !== 'GHS')
+    } else {
+      return CURRENCIES.filter((currency) => currency.symbol === 'GHS')
+    }
+  }, [creditCurrency])
+
+  const secondCurrencyList = useMemo(() => {
+    if (debitCurrency.symbol === 'GHS') {
+      return CURRENCIES.filter((currency) => currency !== debitCurrency)
+    } else {
+      return CURRENCIES.filter((currency) => currency.symbol !== 'GHS')
+    }
+  }, [debitCurrency])
 
   const switchCurrencies = () => {
     setDebitCurrency(creditCurrency)
     setCreditCurrency(debitCurrency)
+  }
+
+  const handleSubmit = () => {
+    onSubmit({
+      debitAmount: inputValue,
+      debitCurrency: debitCurrency,
+      creditCurrency: creditCurrency,
+      debitType: debitCurrency.symbol === 'GHS' ? 'Fiat' : 'Crypto',
+      creditInfo: {
+        bankName: selectedBank.name,
+        accountName,
+        accountNumber,
+        walletAddress: creditAddress
+      }
+    })
   }
 
   useEffect(() => {
@@ -49,7 +93,7 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
     <div className="flex-col space-y-4">
       <div className="flex-col space-y-3 px-6 pt-4 pb-10 w-[448px] bg-stone-700 rounded-xl shadow-md">
         <SwapInput 
-          currencies={CURRENCIES.filter(currency => currency !== creditCurrency)}
+          currencies={firstCurrencyList}
           selectedCurrency={debitCurrency!}
           onCurrencyChange={setDebitCurrency}
           value={inputValue}
@@ -69,12 +113,13 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
           </button>
         </div>
         <p className="text-white font-bold text-sm">You receive</p>
-        <div className="w-fit">
+        <div className="w-full flex flex-row items-center justify-between">
           <CurrencyListbox 
-            currencies={CURRENCIES.filter(currency => currency !== debitCurrency)}
+            currencies={secondCurrencyList}
             selectedCurrency={creditCurrency!}
             onChange={setCreditCurrency}
           />
+          <p className="text-white mr-2 text-lg">{payoutAmount}</p>
         </div>
         <p className="text-white font-bold text-sm">Payout Info</p>
         <AnimatePresence>
@@ -99,7 +144,7 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
         </AnimatePresence>
       </div>
       <button
-        onClick={onSubmit}
+        onClick={handleSubmit}
         disabled={busy}
         className={`w-[448px] bg-gradient-to-r ${connected ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
       >
