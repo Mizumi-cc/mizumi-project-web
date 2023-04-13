@@ -12,6 +12,7 @@ import type { Bank } from "../BankInfoInput"
 import BankInfoInput from "../BankInfoInput"
 import WalletInput from "../WalletInput"
 import Loading from "../Loading"
+import { STABLES, FIATCURRENCY } from "../../utils/enums"
 
 interface SwapBoxProps {
   busy: boolean
@@ -20,8 +21,8 @@ interface SwapBoxProps {
 
 export interface SwapData {
   debitAmount: number
-  debitCurrency: Currency
-  creditCurrency: Currency
+  debitCurrency: number
+  creditCurrency: number
   debitType: 'Fiat' | 'Crypto'
   creditInfo: {
     bankName?: string
@@ -29,6 +30,7 @@ export interface SwapData {
     accountName?: string
     walletAddress?: string
   }
+  creditAmount: number
 }
 
 const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
@@ -68,15 +70,16 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   const handleSubmit = () => {
     onSubmit({
       debitAmount: inputValue,
-      debitCurrency: debitCurrency,
-      creditCurrency: creditCurrency,
+      debitCurrency: debitCurrency.symbol === 'GHS' ? FIATCURRENCY.GHS : debitCurrency.symbol === 'USDC' ? STABLES.USDC : STABLES.USDT,
+      creditCurrency: creditCurrency.symbol === 'GHS' ? FIATCURRENCY.GHS : creditCurrency.symbol === 'USDC' ? STABLES.USDC : STABLES.USDT,
       debitType: debitCurrency.symbol === 'GHS' ? 'Fiat' : 'Crypto',
       creditInfo: {
         bankName: selectedBank.name,
         accountName,
         accountNumber,
         walletAddress: creditAddress
-      }
+      },
+      creditAmount: payoutAmount
     })
   }
 
