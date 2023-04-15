@@ -24,9 +24,9 @@ const RegisterModal: FunctionComponent<Props> = ({
 
   const handleSubmit = async() => {
     const form: RegisterForm = {
-      username,
-      email,
-      password,
+      username: username.trim(),
+      email: email.trim(),
+      password: password.trim(),
     }
     const response = await register(form)
       .catch((err) => {

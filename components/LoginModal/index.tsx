@@ -49,9 +49,9 @@ const LoginModal: FunctionComponent<Props> = ({
       password: ''
     }
     if (usernameOrEmail.includes('@')) {
-      form['email'] = usernameOrEmail
+      form['email'] = usernameOrEmail.trim()
     } else {
-      form['username'] = usernameOrEmail
+      form['username'] = usernameOrEmail.trim()
     }
     form['password'] = password
     return form
