@@ -3,6 +3,7 @@ import { ArrowsUpDownIcon } from "@heroicons/react/20/solid"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { AnimatePresence } from "framer-motion"
 import { PublicKey } from "@solana/web3.js"
+import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 
 import SwapInput from "../SwapInput"
 import CurrencyListbox from "../CurrencyListbox"
@@ -13,6 +14,7 @@ import BankInfoInput from "../BankInfoInput"
 import WalletInput from "../WalletInput"
 import Loading from "../Loading"
 import { STABLES, FIATCURRENCY } from "../../utils/enums"
+import useAuthStore from "../../stores/auth"
 
 interface SwapBoxProps {
   busy: boolean
@@ -35,7 +37,9 @@ export interface SwapData {
 
 const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   const { connected } = useWallet()
-
+  const { setVisible } = useWalletModal()
+  const user = useAuthStore((state) => state.user)
+  const { setShowLoginModal } = useAuthStore()
   const [inputValue, setInputValue] = useState(0)
   const [debitCurrency, setDebitCurrency] = useState<Currency>(CURRENCIES[0])
   const [creditCurrency, setCreditCurrency] = useState<Currency>(CURRENCIES[1])
@@ -68,6 +72,13 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   }
 
   const handleSubmit = () => {
+    if (!connected) {
+      setVisible(true)
+      return
+    } else if (!user) {
+      setShowLoginModal(true)
+      return
+    }
     onSubmit({
       debitAmount: inputValue,
       debitCurrency: debitCurrency.symbol === 'GHS' ? FIATCURRENCY.GHS : debitCurrency.symbol === 'USDC' ? STABLES.USDC : STABLES.USDT,
@@ -152,7 +163,7 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
         className={`w-[448px] bg-gradient-to-r ${connected ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
       >
         <div className="w-full h-full bg-black rounded-lg flex justify-center items-center">
-          {busy ? <Loading /> : <p className="text-white font-bold text-md">{connected ? 'Swap' : 'Connect Wallet'}</p>}
+          {busy ? <Loading /> : <p className="text-white font-bold text-md">{!user ? 'Login' : connected ? 'Swap' : 'Connect wallet'}</p>}
         </div>
       </button>
     </div>

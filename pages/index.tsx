@@ -15,15 +15,18 @@ import { STABLES, TRANSACTIONKIND } from "../utils/enums"
 import RegisterModal from "../components/RegisterModal"
 import LoginModal from "../components/LoginModal"
 
+// stores
+import useAuthStore from "../stores/auth"
+
 export default function Home() {
+  const { showLoginModal, showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
   const { connected } = useWallet()
   const { setVisible } = useWalletModal()
 
   const [busy, setBusy] = useState<boolean>(false)
   const [swapData, setSwapData] = useState<SwapData | null>(null)
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
-  const [showRegisterModal, setShowRegisterModal] = useState(false)
-  const [showLoginModal, setShowLoginModal] = useState(false)
+  
 
   const handleSwapOrConnectClick = (data: SwapData) => {
     if (!connected) {
