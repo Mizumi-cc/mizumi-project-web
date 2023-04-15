@@ -23,7 +23,7 @@ const FormInput: FunctionComponent<Props> = ({
       <input 
         type={type}
         placeholder={placeholder}
-        className="input bg-black w-full" 
+        className={`input bg-black w-full ${errors && errors[label.toLocaleLowerCase()] ? 'input-error' : ''}}`} 
         value={value}
         onChange={onChange}
         onBlur={onBlur}

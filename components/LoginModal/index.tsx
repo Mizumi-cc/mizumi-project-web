@@ -1,7 +1,10 @@
-import { FunctionComponent, Fragment, useState, useCallback } from "react"
+import { FunctionComponent, Fragment, useState, useMemo } from "react"
 import { Dialog, Transition } from "@headlessui/react"
 
 import FormInput from "../FormInput"
+import useAuthStore from "../../stores/auth"
+import { LoginForm, login } from "../../services/auth"
+import Loading from "../Loading"
 
 interface Props {
   isOpen: boolean
@@ -11,31 +14,78 @@ interface Props {
 const LoginModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
+  const { setUser, setToken } = useAuthStore()
+  const [busy, setBusy] = useState<boolean>(false)
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
-  const [error, setError] = useState<string>('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleSubmit = () => {}
+  const handleSubmit = async() => {
+    setBusy(true)
+    const form = generateForm()
+    const response = await login(form)
+      .catch((err) => {
+        setBusy(false)
+      })
+    if (response) {
+      clearForm()
+      setToken(response.data.token.token)
+      setUser(response.data.user)
+      sessionStorage.setItem('token', response.data.token.token)
+      onClose()
+    }
+  }
+
+  const clearForm = () => {
+    setPassword('')
+    setUsernameOrEmail('')
+    setBusy(false)
+  }
+
+  const generateForm = () => {
+    const form: LoginForm = {
+      email: undefined,
+      username: undefined,
+      password: ''
+    }
+    if (usernameOrEmail.includes('@')) {
+      form['email'] = usernameOrEmail
+    } else {
+      form['username'] = usernameOrEmail
+    }
+    form['password'] = password
+    return form
+  }
 
   const checkUsernameOrEmail = () => {
     if (usernameOrEmail.length === 0) return
 
     if (usernameOrEmail.includes('@') && /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(usernameOrEmail)) {
-      setError('')
+      setErrors((prevState) => ({...prevState, email: ''}))
+    } else if (!usernameOrEmail.includes('@')) {
+      setErrors((prevState) => ({...prevState, email: ''}))
     } else {
-      setError('Please enter a valid email')
+      setErrors((prevState) => ({...prevState, email: 'Please enter a valid email'}))
     }
   }
 
   const checkPassword = () => {
     if (password.length === 0) {
-      setError('Please enter a password')
+      setErrors((prevState) => ({...prevState, password: 'Please enter a password'}))
     } else if (password.length < 8) {
-      setError('Password must be at least 8 characters')
+      setErrors((prevState) => ({...prevState, password: 'Password must be at least 8 characters'}))
     } else {
-      setError('')
+      setErrors((prevState) => ({...prevState, password: ''}))
     }
   }
+
+  const disabled = useMemo(() => {
+    if (Object.values(errors).every((error) => error === '')) {
+      return false
+    } else {
+      return true
+    }
+  }, [errors])
 
   return (
     <Transition
@@ -81,13 +131,13 @@ const LoginModal: FunctionComponent<Props> = ({
                 </Dialog.Title>
                 <div className="h-[1px] bg-gradient-to-r from-blue-400 to-yellow-500 mt-4" />
                 <form
-                  className="mt-10 space-y-6 flex flex-col px-6"
+                  className="mt-2 space-y-2 flex flex-col px-6"
                   onClick={(e) => e.preventDefault()}
                 >
                   <FormInput
                     label="Username/Email"
                     type="text"
-                    placeholder="Username/Email"
+                    placeholder=""
                     value={usernameOrEmail}
                     onBlur={checkUsernameOrEmail}
                     onChange={(e) => setUsernameOrEmail(e.target.value)}
@@ -95,26 +145,21 @@ const LoginModal: FunctionComponent<Props> = ({
                   <FormInput
                     label="Password"
                     type="password"
-                    placeholder="Password"
+                    placeholder="xxxxxxxxxxxx"
                     value={password}
                     onBlur={checkPassword}
                     onChange={(e) => setPassword(e.target.value)}
                   />
-                  {error.length > 0 && (
-                    <div className="text-red-500 text-sm font-medium">
-                      {error}
-                    </div>
-                  )}
                 </form>
                 <div className="mt-10 px-6">
                   <button
                     type="button"
-                    disabled={error.length > 0}
-                    className={`bg-gradient-to-r ${error.length === 0 ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} w-full h-[50px] rounded-lg`}
+                    disabled={disabled || busy}
+                    className={`bg-gradient-to-r ${Object.keys(errors).length > 0 ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} w-full h-[50px] rounded-lg`}
                     onClick={handleSubmit}
                   >
                     <div className="w-full h-full bg-black rounded-lg flex justify-center items-center text-white font-bold text-md">
-                      Submit
+                      {busy ? <Loading /> : 'Submit'}
                     </div>
                   </button>
                 </div>

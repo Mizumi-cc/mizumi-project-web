@@ -12,6 +12,8 @@ import { createOrder } from "../services/order"
 import type { Order } from "../utils/models"
 import type { CardInfo } from "../components/CardCheckoutModal"
 import { STABLES, TRANSACTIONKIND } from "../utils/enums"
+import RegisterModal from "../components/RegisterModal"
+import LoginModal from "../components/LoginModal"
 
 export default function Home() {
   const { connected } = useWallet()
@@ -19,7 +21,9 @@ export default function Home() {
 
   const [busy, setBusy] = useState<boolean>(false)
   const [swapData, setSwapData] = useState<SwapData | null>(null)
-  const [showCheckoutModal, setShowCheckoutModal] = useState(true)
+  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
+  const [showRegisterModal, setShowRegisterModal] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
 
   const handleSwapOrConnectClick = (data: SwapData) => {
     if (!connected) {
@@ -65,7 +69,10 @@ export default function Home() {
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
       <HTMLHead />
-      <Header />
+      <Header 
+        showRegisterModal={() => setShowRegisterModal(true)}
+        showLoginModal={() => setShowLoginModal(true)}
+      />
       <div className="justify-center items-center flex h-full pt-32">
         <SwapBox 
           busy={busy}
@@ -76,6 +83,14 @@ export default function Home() {
         isOpen={showCheckoutModal}
         onClose={closeCheckoutModal}
         onSubmit={completeCheckout}
+      />
+      <RegisterModal 
+        isOpen={showRegisterModal}
+        onClose={() => setShowRegisterModal(false)}
+      />
+      <LoginModal 
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
       />
     </main>
   )

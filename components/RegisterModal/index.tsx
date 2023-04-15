@@ -1,7 +1,10 @@
-import { FunctionComponent, Fragment, useState, useCallback } from "react"
+import { FunctionComponent, Fragment, useState, useMemo } from "react"
 import { Dialog, Transition } from "@headlessui/react"
 
 import FormInput from "../FormInput"
+import useAuthStore from "../../stores/auth"
+import { RegisterForm, register } from "../../services/auth"
+import Loading from "../Loading"
 
 interface Props {
   isOpen: boolean
@@ -11,38 +14,84 @@ interface Props {
 const RegisterModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
+  const { setUser, setToken } = useAuthStore()
+  const [busy, setBusy] = useState<boolean>(false)
   const [username, setUsername] = useState<string>('')
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [confirmPassword, setConfirmPassword] = useState<string>('')
-  const [error, setError] = useState<string>('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleSubmit = () => {
-    
+  const handleSubmit = async() => {
+    const form: RegisterForm = {
+      username,
+      email,
+      password,
+    }
+    const response = await register(form)
+      .catch((err) => {
+        setBusy(false)
+        setErrors((prevState) => ({...prevState, register: err.response.data.message}))
+      })
+    if (response) {
+      clearForm()
+      setToken(response.data.token.token)
+      setUser(response.data.user)
+      sessionStorage.setItem('token', response.data.token.token)
+      onClose()
+    }
+  }
+
+  const clearForm = () => {
+    setPassword('')
+    setConfirmPassword('')
+    setEmail('')
+    setUsername('')
+    setBusy(false)
+  }
+
+  const checkUsername = () => {
+    if (username.length === 0 || username.length > 20) {
+      setErrors((prevState) => ({...prevState, username: 'Username must be between 1 and 20 characters'}))
+    } else if (username.length < 3) {
+      setErrors((prevState) => ({...prevState, username: 'Username must be at least 4 characters'}))
+    } else {
+      setErrors((prevState) => ({...prevState, username: ''}))
+    }
   }
 
   const checkEmail = () => {
     if (email.length === 0) return
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-      setError('')
+      setErrors((prevState) => ({...prevState, email: ''}))
     } else {
-      setError('Please enter a valid email')
+      setErrors((prevState) => ({...prevState, email: 'Please enter a valid email'}))
     }
   }
 
   const checkPassword = () => {
-    if (password.length === 0 || confirmPassword.length === 0) {
-      setError('Please enter a password')
+    if (password.length === 0) {
+      setErrors((prevState) => ({...prevState, password: 'Please enter a password'}))
+    } else if (password.length < 8) {
+      setErrors((prevState) => ({...prevState, password: 'Password must be at least 8 characters'}))
     } else {
-      setError('')
+      setErrors((prevState) => ({...prevState, password: ''}))
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match')
+      setErrors((prevState) => ({...prevState, confirmPassword: 'Passwords do not match'}))
     } else {
-      setError('')
+      setErrors((prevState) => ({...prevState, confirmPassword: ''}))
     }
   }
+
+  const disabled = useMemo(() => {
+    if (Object.values(errors).every((error) => error === '')) {
+      return false
+    } else {
+      return true
+    }
+  }, [errors])
 
   return (
     <Transition
@@ -96,6 +145,7 @@ const RegisterModal: FunctionComponent<Props> = ({
                     type="text"
                     placeholder="john.doe"
                     value={username}
+                    onBlur={checkUsername}
                     onChange={(e) => setUsername(e.target.value)}
                   /> 
                   <FormInput 
@@ -121,21 +171,16 @@ const RegisterModal: FunctionComponent<Props> = ({
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     onBlur={checkPassword}
                   />
-                  {error.length > 0 && (
-                    <div className="text-red-500 text-sm font-medium">
-                      {error}
-                    </div>
-                  )}
                 </form>
                 <div className="mt-10 px-6">
                   <button
                     type="button"
-                    disabled={error.length > 0}
-                    className={`bg-gradient-to-r ${error.length === 0 ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} w-full h-[50px] rounded-lg`}
+                    disabled={disabled || busy}
+                    className={`bg-gradient-to-r ${Object.keys(errors).length > 0 ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} w-full h-[50px] rounded-lg`}
                     onClick={handleSubmit}
                   >
                     <div className="w-full h-full bg-black rounded-lg flex justify-center items-center text-white font-bold text-md">
-                      Submit
+                      {busy ? <Loading /> : 'Submit'}
                     </div>
                   </button>
                 </div>
