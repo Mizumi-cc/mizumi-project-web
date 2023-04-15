@@ -14,7 +14,7 @@ interface Props {
 const RegisterModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
-  const { setUser, setToken } = useAuthStore()
+  const { setUser, setToken, setShowLoginModal } = useAuthStore()
   const [busy, setBusy] = useState<boolean>(false)
   const [username, setUsername] = useState<string>('')
   const [email, setEmail] = useState<string>('')
@@ -92,6 +92,11 @@ const RegisterModal: FunctionComponent<Props> = ({
       return true
     }
   }, [errors])
+
+  const openLoginModal = () => {
+    setShowLoginModal(true)
+    onClose()
+  }
 
   return (
     <Transition
@@ -182,6 +187,15 @@ const RegisterModal: FunctionComponent<Props> = ({
                     <div className="w-full h-full bg-black rounded-lg flex justify-center items-center text-white font-bold text-md">
                       {busy ? <Loading /> : 'Submit'}
                     </div>
+                  </button>
+                </div>
+                <div className="flex flex-row items-center justify-between px-6 mt-2 mb-6">
+                  <p className="text-white text-sm font-medium">Already have an account?</p>
+                  <button
+                    onClick={openLoginModal}
+                    className="text-white text-sm font-medium"
+                  >
+                    Login
                   </button>
                 </div>
               </Dialog.Panel>
