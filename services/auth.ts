@@ -48,3 +48,15 @@ export const logout = async (token: string) => {
     }
   )
 }
+
+export const fetchAuthenticatedUser = async (token: string) => {
+  return await axios.get(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/auth/me`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    }
+  )
+}
