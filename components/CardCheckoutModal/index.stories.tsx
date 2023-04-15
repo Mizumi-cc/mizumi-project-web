@@ -10,7 +10,7 @@ const Template: ComponentStory<typeof CardCheckoutModal>  = (args) => <CardCheck
 
 export const Default = Template.bind({})
 Default.args = {
-  submit: () => {},
+  onSubmit: (data: any) => {},
   isOpen: true,
   onClose: () => {},
 }

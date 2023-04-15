@@ -10,5 +10,6 @@ const Template: ComponentStory<typeof SwapBox> = (args) => <SwapBox {...args} />
 
 export const Default = Template.bind({})
 Default.args = {
-  openPaymentDetailsMModal: () => {},
+  busy: false,
+  onSubmit: (data: any) => {},
 }
