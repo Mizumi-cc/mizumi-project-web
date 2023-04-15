@@ -72,11 +72,13 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   }
 
   const handleSubmit = () => {
+    if (!user) {
+      setShowLoginModal(true)
+      return
+    }
+    
     if (!connected) {
       setVisible(true)
-      return
-    } else if (!user) {
-      setShowLoginModal(true)
       return
     }
     onSubmit({
@@ -160,7 +162,7 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
       <button
         onClick={handleSubmit}
         disabled={busy}
-        className={`w-[448px] bg-gradient-to-r ${connected ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
+        className={`w-[448px] bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
       >
         <div className="w-full h-full bg-black rounded-lg flex justify-center items-center">
           {busy ? <Loading /> : <p className="text-white font-bold text-md">{!user ? 'Login' : connected ? 'Swap' : 'Connect wallet'}</p>}
