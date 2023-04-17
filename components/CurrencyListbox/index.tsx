@@ -54,7 +54,7 @@ const CurrencyMenu = ({currencies, selectedCurrency, onChange}: CurrencyMenuProp
                       height={24}
                     />
                     <span
-                      className={`block truncate text-lg ${
+                      className={`block truncate text-lg text-black ${
                         active ? 'font-medium' : 'font-normal'
                       }`}
                     >
