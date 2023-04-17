@@ -56,15 +56,15 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
     } else {
       return CURRENCIES.filter((currency) => currency.symbol === 'GHS')
     }
-  }, [creditCurrency])
+  }, [creditCurrency, debitCurrency])
 
   const secondCurrencyList = useMemo(() => {
     if (debitCurrency.symbol === 'GHS') {
       return CURRENCIES.filter((currency) => currency !== debitCurrency)
     } else {
-      return CURRENCIES.filter((currency) => currency.symbol !== 'GHS')
+      return CURRENCIES.filter((currency) => currency.symbol === 'GHS')
     }
-  }, [debitCurrency])
+  }, [debitCurrency, creditCurrency])
 
   const switchCurrencies = () => {
     setDebitCurrency(creditCurrency)
