@@ -30,7 +30,14 @@ const LoginModal: FunctionComponent<Props> = ({
     if (response) {
       clearForm()
       setToken(response.data.token.token)
-      setUser(response.data.user)
+      setUser({
+        id: response.data.user.id,
+        username: response.data.user.username,
+        email: response.data.user.email,
+        walletAddress: response.data.user.wallet_address,
+        createdAt: response.data.user.created_at,
+        updatedAt: response.data.user.updated_at
+      })
       sessionStorage.setItem('token', response.data.token.token)
       onClose()
     }

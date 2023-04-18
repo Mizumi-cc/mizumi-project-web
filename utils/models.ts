@@ -15,6 +15,7 @@ export type User = {
   id: string
   email: string
   username: string
+  walletAddress: string
   createdAt: string
   updatedAt: string
 }

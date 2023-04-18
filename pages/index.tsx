@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 
@@ -14,13 +14,15 @@ import type { CardInfo } from "../components/CardCheckoutModal"
 import { STABLES, TRANSACTIONKIND } from "../utils/enums"
 import RegisterModal from "../components/RegisterModal"
 import LoginModal from "../components/LoginModal"
+import { saveWalletAddress } from "../services/auth"
 
 // stores
 import useAuthStore from "../stores/auth"
 
 export default function Home() {
-  const { showLoginModal, showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
-  const { connected } = useWallet()
+  const { showLoginModal, setToken, setUser, token, user,
+    showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
+  const { connected, publicKey } = useWallet()
   const { setVisible } = useWalletModal()
 
   const [busy, setBusy] = useState<boolean>(false)
@@ -68,6 +70,16 @@ export default function Home() {
     setBusy(false)
     setShowCheckoutModal(false)
   }
+
+  useEffect(() => {
+    console.log(user, 'user')
+    async function storeUserWallet() {
+      if (connected && publicKey && !user?.walletAddress) {
+        await saveWalletAddress(token!, publicKey!.toBase58())
+      }
+    }
+    storeUserWallet()
+  }, [connected])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>

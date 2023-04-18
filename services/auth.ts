@@ -71,3 +71,16 @@ export const isUniqueUsernameOrEmail = async (username?: string, email?: string)
     }
   )
 }
+
+export const saveWalletAddress = async (token: string, address: string) => {
+  return await axios.patch(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v0/wallet-address`,
+    { address },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    }
+  )
+}
