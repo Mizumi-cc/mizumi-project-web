@@ -22,6 +22,11 @@ const RegisterModal: FunctionComponent<Props> = ({
   const [confirmPassword, setConfirmPassword] = useState<string>('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
+  const handleClose = () => {
+    clearForm()
+    onClose()
+  }
+
   const handleSubmit = async() => {
     const form: RegisterForm = {
       username: username.trim(),
@@ -47,6 +52,7 @@ const RegisterModal: FunctionComponent<Props> = ({
     setConfirmPassword('')
     setEmail('')
     setUsername('')
+    setErrors({})
     setBusy(false)
   }
 
@@ -117,7 +123,7 @@ const RegisterModal: FunctionComponent<Props> = ({
       <Dialog
         as="div"
         className={"relative z-10"}
-        onClose={onClose}
+        onClose={handleClose}
       >
         <Transition.Child
           as={Fragment}

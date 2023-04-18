@@ -36,9 +36,15 @@ const LoginModal: FunctionComponent<Props> = ({
     }
   }
 
+  const handleClose = () => {
+    clearForm()
+    onClose()
+  }
+
   const clearForm = () => {
     setPassword('')
     setUsernameOrEmail('')
+    setErrors({})
     setBusy(false)
   }
 
@@ -101,7 +107,7 @@ const LoginModal: FunctionComponent<Props> = ({
       <Dialog
         as="div"
         className={"relative z-10"}
-        onClose={onClose}
+        onClose={handleClose}
       >
         <Transition.Child
           as={Fragment}
