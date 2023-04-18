@@ -6,7 +6,7 @@ interface AuthState {
   token: string | null
   setToken: (token: string) => void
   user: User | null
-  setUser: (user: User) => void
+  setUser: (user: User | null) => void
   showLoginModal: boolean
   setShowLoginModal: (show: boolean) => void
   showRegisterModal: boolean
