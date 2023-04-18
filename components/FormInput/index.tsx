@@ -18,19 +18,19 @@ const FormInput: FunctionComponent<Props> = ({
   return (
     <div className="form-control w-full">
       <label className="label">
-        <span className="label-text">{label}</span>
+        <span className="label-text text-white">{label}</span>
       </label>
       <input 
         type={type}
         placeholder={placeholder}
-        className={`input bg-black w-full ${errors && errors[label.toLocaleLowerCase()] ? 'input-error' : ''}}`} 
+        className={`input bg-black text-white w-full ${errors && errors[label.toLowerCase()] ? 'input-error' : ''}`} 
         value={value}
         onChange={onChange}
         onBlur={onBlur}
       />
-      {errors && errors[label.toLocaleLowerCase()] && (
+      {errors && errors[label.toLowerCase()] && (
         <label className="label">
-          <span className="label-text-alt">{errors[label.toLocaleLowerCase()]}</span>
+          <span className="label-text-alt text-red-500">{errors[label.toLocaleLowerCase()]}</span>
         </label>
       )}
     </div>

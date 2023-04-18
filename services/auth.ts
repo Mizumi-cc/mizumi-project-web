@@ -60,3 +60,14 @@ export const fetchAuthenticatedUser = async (token: string) => {
     }
   )
 }
+
+export const isUniqueUsernameOrEmail = async (username?: string, email?: string) => {
+  return await axios.get(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/auth/is-unique?${username ? `username=${username}` : ''}${email ? `email=${email}` : ''}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+      }
+    }
+  )
+}

@@ -3,7 +3,7 @@ import { Dialog, Transition } from "@headlessui/react"
 
 import FormInput from "../FormInput"
 import useAuthStore from "../../stores/auth"
-import { RegisterForm, register } from "../../services/auth"
+import { RegisterForm, register, isUniqueUsernameOrEmail } from "../../services/auth"
 import Loading from "../Loading"
 
 interface Props {
@@ -50,22 +50,32 @@ const RegisterModal: FunctionComponent<Props> = ({
     setBusy(false)
   }
 
-  const checkUsername = () => {
+  const checkUsername = async () => {
     if (username.length === 0 || username.length > 20) {
       setErrors((prevState) => ({...prevState, username: 'Username must be between 1 and 20 characters'}))
+      return
     } else if (username.length < 3) {
       setErrors((prevState) => ({...prevState, username: 'Username must be at least 4 characters'}))
+      return
     } else {
       setErrors((prevState) => ({...prevState, username: ''}))
     }
+    const response = await isUniqueUsernameOrEmail(username)
+    if (!response.data.isUnique) {
+      setErrors((prevState) => ({...prevState, username: 'Username is already taken'}))
+    }
   }
 
-  const checkEmail = () => {
+  const checkEmail = async () => {
     if (email.length === 0) return
     if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
       setErrors((prevState) => ({...prevState, email: ''}))
     } else {
       setErrors((prevState) => ({...prevState, email: 'Please enter a valid email'}))
+    }
+    const response = await isUniqueUsernameOrEmail(undefined, email)
+    if (!response.data.isUnique) {
+      setErrors((prevState) => ({...prevState, email: 'Email is already taken'}))
     }
   }
 
@@ -151,6 +161,7 @@ const RegisterModal: FunctionComponent<Props> = ({
                     placeholder="john.doe"
                     value={username}
                     onBlur={checkUsername}
+                    errors={errors}
                     onChange={(e) => setUsername(e.target.value)}
                   /> 
                   <FormInput 
@@ -158,6 +169,7 @@ const RegisterModal: FunctionComponent<Props> = ({
                     type="text"
                     placeholder="someone@example.com"
                     value={email}
+                    errors={errors}
                     onChange={(e) => setEmail(e.target.value)}
                     onBlur={checkEmail}
                   />
@@ -166,6 +178,7 @@ const RegisterModal: FunctionComponent<Props> = ({
                     type="password"
                     placeholder="xxxxxxxxxxxxx"
                     value={password}
+                    errors={errors}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                   <FormInput 
@@ -173,6 +186,7 @@ const RegisterModal: FunctionComponent<Props> = ({
                     type="password"
                     placeholder="xxxxxxxxxxxxx"
                     value={confirmPassword}
+                    errors={errors}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     onBlur={checkPassword}
                   />
