@@ -2,25 +2,34 @@ import { create } from "zustand"
 
 import type { User } from "../utils/models"
 
-interface AuthState {
+type AuthState = {
   token: string | null
-  setToken: (token: string) => void
   user: User | null
-  setUser: (user: User | null) => void
   showLoginModal: boolean
-  setShowLoginModal: (show: boolean) => void
   showRegisterModal: boolean
+}
+
+type Actions = {
+  reset: () => void
+  setToken: (token: string) => void
+  setUser: (user: User | null) => void
+  setShowLoginModal: (show: boolean) => void
   setShowRegisterModal: (show: boolean) => void
 }
 
-const useAuthStore = create<AuthState>((set) => ({
+const initialState: AuthState = {
   token: null,
-  setToken: (token) => set({ token }),
   user: null,
-  setUser: (user) => set({ user }),
   showLoginModal: false,
+  showRegisterModal: false
+}
+
+const useAuthStore = create<AuthState & Actions>((set) => ({
+  ...initialState,
+  reset: () => set(initialState),
+  setToken: (token) => set({ token }),
+  setUser: (user) => set({ user }),
   setShowLoginModal: (show) => set({ showLoginModal: show }),
-  showRegisterModal: false,
   setShowRegisterModal: (show) => set({ showRegisterModal: show })
 }))
 

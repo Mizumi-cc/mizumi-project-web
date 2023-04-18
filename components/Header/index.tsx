@@ -10,13 +10,12 @@ interface HeaderProps {
 }
 
 const Header = ({ logoMode, showRegisterModal, showLoginModal }: HeaderProps) => {
-  const { user, token, setToken, setUser } = useAuthStore()
+  const { user, token, reset } = useAuthStore()
 
   const onLogout = async () => {
     await logout(token!)
       .then(() => {
-        setUser(null)
-        setToken('')
+        reset()
         sessionStorage.removeItem('token')
       })
   }
