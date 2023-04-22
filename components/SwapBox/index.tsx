@@ -18,6 +18,7 @@ import useAuthStore from "../../stores/auth"
 
 interface SwapBoxProps {
   busy: boolean
+  rates: Record<string, number>
   onSubmit: (data: SwapData) => void
 }
 
@@ -35,7 +36,7 @@ export interface SwapData {
   creditAmount: number
 }
 
-const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
+const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   const { connected } = useWallet()
   const { setVisible } = useWalletModal()
   const user = useAuthStore((state) => state.user)
@@ -48,7 +49,6 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
   const [accountName, setAccountName] = useState('')
   const [addressIsValid, setAddressIsValid] = useState(false)
   const [creditAddress, setCreditAddress] = useState<string>('')
-  const [payoutAmount, setPayoutAmount] = useState<number>(0)
 
   const firstCurrencyList = useMemo(() => {
     if (creditCurrency.symbol === 'GHS')  {
@@ -92,9 +92,39 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
         accountNumber,
         walletAddress: creditAddress
       },
-      creditAmount: payoutAmount
+      creditAmount: parseFloat(payoutAmount)
     })
   }
+
+  const prettyValue = useMemo(() => {
+    if (inputValue === 0) {
+      return 0
+    }
+    return inputValue.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  }, [inputValue, debitCurrency, rates])
+
+  const payoutAmount = useMemo(() => {
+    if (creditCurrency.symbol === "USDC") {
+      return (inputValue * rates.USDC).toLocaleString('en-US', { maximumFractionDigits: 2})
+    } else if (creditCurrency.symbol === "USDT") {
+      return (inputValue * rates.USDT).toLocaleString('en-US', { maximumFractionDigits: 2})
+    } else {
+      return (inputValue * rates.GHS).toLocaleString('en-US', { maximumFractionDigits: 2})
+    }
+  }, [debitCurrency, inputValue, rates])
+
+  const dollarValue = useMemo(() => {
+    if (debitCurrency.symbol === "GHS") {
+      return inputValue / rates.GHS
+    } else if (debitCurrency.symbol === "USDC") {
+      return rates.USDC * inputValue
+    } else {
+      return rates.USDT * inputValue
+    }
+  }, [debitCurrency, inputValue, rates])
 
   useEffect(() => {
     try {
@@ -114,7 +144,7 @@ const SwapBox = ({ onSubmit, busy }: SwapBoxProps) => {
           onCurrencyChange={setDebitCurrency}
           value={inputValue}
           onValueChange={setInputValue}
-          dollarValue={0}
+          dollarValue={dollarValue}
           label={'You pay'}
         />
         <div className="flex justify-center items-center">

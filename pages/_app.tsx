@@ -1,7 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
-import { UnsafeBurnerWalletAdapter } from '@solana/wallet-adapter-wallets'
 import {
     WalletModalProvider,
 } from '@solana/wallet-adapter-react-ui'
@@ -19,9 +18,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const endpoint = useMemo(() => clusterApiUrl(network), [network])
 
   const wallets = useMemo(
-    () => [
-      new UnsafeBurnerWalletAdapter()
-    ],
+    () => [],
     []
   )
 
@@ -31,7 +28,14 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (token) {
         const response = await fetchAuthenticatedUser(token)
         if (response) {
-          setUser(response.data.user)
+          setUser({
+            id: response.data.user.id,
+            username: response.data.user.username,
+            email: response.data.user.email,
+            walletAddress: response.data.user.wallet_address,
+            createdAt: response.data.user.created_at,
+            updatedAt: response.data.user.updated_at
+          })
           setToken(token)
         }
       }

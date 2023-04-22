@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
-import { useWallet } from "@solana/wallet-adapter-react"
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
-
+import { PythConnection, getPythProgramKeyForCluster } from "@pythnetwork/client"
 // components
 import HTMLHead from "../components/HTMLHead"
 import Header from "../components/Header"
@@ -15,6 +15,8 @@ import { STABLES, TRANSACTIONKIND } from "../utils/enums"
 import RegisterModal from "../components/RegisterModal"
 import LoginModal from "../components/LoginModal"
 import { saveWalletAddress } from "../services/auth"
+import RatesBox from "../components/RatesBox"
+import { getGHSRates } from "../services/rates"
 
 // stores
 import useAuthStore from "../stores/auth"
@@ -23,12 +25,15 @@ export default function Home() {
   const { showLoginModal, setToken, setUser, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
   const { connected, publicKey } = useWallet()
+  const { connection } = useConnection()
   const { setVisible } = useWalletModal()
 
   const [busy, setBusy] = useState<boolean>(false)
   const [swapData, setSwapData] = useState<SwapData | null>(null)
   const [showCheckoutModal, setShowCheckoutModal] = useState(false)
-  
+  const [ghsRate, setGhsRate] = useState<number>(0)
+  const [usdcRate, setUsdcRate] = useState<number>(0)
+  const [usdtRate, setUsdtRate] = useState<number>(0)
 
   const handleSwapOrConnectClick = (data: SwapData) => {
     if (!connected) {
@@ -72,14 +77,43 @@ export default function Home() {
   }
 
   useEffect(() => {
-    console.log(user, 'user')
+    async function getRates() {
+      const response = await getGHSRates()
+      if (response) {
+        console.log(response.data)
+        setGhsRate(response.data.rates.GHS)
+      }
+    }
+
+    getRates()
+  }, [])
+
+  useEffect(() => {
     async function storeUserWallet() {
-      if (connected && publicKey && !user?.walletAddress) {
+      if (connected && publicKey && user && !user?.walletAddress) {
         await saveWalletAddress(token!, publicKey!.toBase58())
       }
     }
     storeUserWallet()
-  }, [connected])
+  }, [connected, user])
+
+  useEffect(() => {
+    const pythConnection = new PythConnection(connection, getPythProgramKeyForCluster('devnet'))
+    pythConnection.onPriceChangeVerbose((productAccount, priceAccount) => {
+      const product = productAccount.accountInfo.data.product
+      const price = priceAccount.accountInfo.data
+      if (price.price && price.confidence) {
+        if (product.symbol === 'Crypto.USDC/USD') {
+          console.log(`${product.symbol}: $${price.price} \xB1$${price.confidence}`)
+          setUsdcRate(price.price)
+        } else if (product.symbol === 'Crypto.USDT/USD') {
+          console.log(`${product.symbol}: $${price.price} \xB1$${price.confidence}`)
+          setUsdtRate(price.price)
+        }
+      }
+    })
+    pythConnection.start()
+  }, [])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
@@ -88,10 +122,20 @@ export default function Home() {
         showRegisterModal={() => setShowRegisterModal(true)}
         showLoginModal={() => setShowLoginModal(true)}
       />
-      <div className="justify-center items-center flex h-full pt-32">
+      <div className="justify-center items-center flex flex-col h-full pt-32 space-y-10">
         <SwapBox 
           busy={busy}
+          rates={{
+            USDC: usdcRate,
+            USDT: usdtRate,
+            GHS: ghsRate,
+          }}
           onSubmit={handleSwapOrConnectClick}
+        />
+        <RatesBox 
+          usdcRate={usdcRate}
+          ghsRate={ghsRate}
+          usdtRate={usdtRate}
         />
       </div>
       <CardCheckoutModal 

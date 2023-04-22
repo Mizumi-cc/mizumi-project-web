@@ -27,13 +27,14 @@ const SwapInput = ({
         />
         <div className="flex flex-col items-end">
           <input 
-            value={value}
+            value={value === 0 ? '' : value}
             onChange={e => onValueChange(parseFloat(e.target.value))}
             className="bg-transparent outline-none text-white text-right text-lg"
             type={'number'}
             placeholder={'0.00'}
           />
-          {value !== 0 && <span className="text-gray-400 text-xs">{`$${dollarValue.toFixed(2)}`}</span>}
+          {(value !== 0 && !isNaN(dollarValue)) && <span className="text-gray-400 text-xs">
+            {`$${dollarValue.toLocaleString('en-US', { maximumFractionDigits: 2})}`}</span>}
         </div>
       </div>
     </>
