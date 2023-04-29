@@ -50,7 +50,7 @@ export default function Home(props: any) {
   const [usdtRate, setUsdtRate] = useState<number>(0)
   const [clientSecret, setClientSecret] = useState<string>('')
   const [paymentStatus, setPaymentStatus] = useState<string>(props.paymentStatus)
-  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(props.paymentStatus !== '')
+  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(props.paymentStatus)
   const [activeOrder, setActiveOrder] = useState<Order | null>(props.order)
 
   const handleSwapOrConnectClick = async(data: SwapData) => {
@@ -127,12 +127,6 @@ export default function Home(props: any) {
   const closeCheckoutModal = () => {
     setBusy(false)
     setShowCheckoutModal(false)
-  }
-
-  const fetchOrder = async (orderId: string) => {
-    const order = await getOrder(orderId)
-      .then(res => res.data)
-    setActiveOrder(order)
   }
 
   useEffect(() => {
@@ -247,6 +241,13 @@ export async function getServerSideProps({ query }: { query: any}) {
         order,
         paymentStatus: response,
       }
+    }
+  }
+
+  return {
+    props: {
+      order: null,
+      paymentStatus: null,
     }
   }
 }
