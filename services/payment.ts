@@ -1,7 +1,7 @@
 import axios from "axios"
 
 export const verifyPayment = async (reference: string) => {
-  return await axios.post(
+  return await axios.get(
     `${process.env.NEXT_PUBLIC_FINCRA_URL}/checkout/payments/merchant-reference/${reference}`,
     {
       headers: {

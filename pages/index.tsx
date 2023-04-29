@@ -237,8 +237,11 @@ export async function getServerSideProps({ query }: { query: any}) {
       .then(res => res.data)
     
     const response = await verifyPayment(reference as string)
-      .then((res) => res.data.status)
-      .catch((err) => 'error')
+      .then((res) => res.data.data.status)
+      .catch((err) => {
+        console.log(err)
+        return 'error'
+      })
     return {
       props: {
         order,
