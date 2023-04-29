@@ -228,7 +228,7 @@ export async function getServerSideProps({ query }: { query: any}) {
 
   if (reference) {
     const order = await getOrder(reference as string)
-      .then(res => res.data)
+      .then(res => res.data.transaction)
     
     const response = await verifyPayment(reference as string)
       .then((res) => res.data.data.status)
