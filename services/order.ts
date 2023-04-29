@@ -72,7 +72,7 @@ export const getUserOrders = async (userId: string, token: string) => {
 
 export const getOrder = async (orderId: string) => {
   return await axios.get(
-    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v0/order/${orderId}`,
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/order/${orderId}`,
     {
       headers: {
         "Content-Type": "application/json",
