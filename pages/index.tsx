@@ -175,7 +175,7 @@ export default function Home(props: any) {
     if (props.paymentStatus === 'success') {
       handleCreditUserWallet(props.order.id)
     }
-  }, [])
+  }, [props])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
