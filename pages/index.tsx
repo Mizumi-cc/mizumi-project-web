@@ -50,7 +50,7 @@ export default function Home(props: any) {
   const [usdtRate, setUsdtRate] = useState<number>(0)
   const [clientSecret, setClientSecret] = useState<string>('')
   const [paymentStatus, setPaymentStatus] = useState<string>(props.paymentStatus)
-  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(props.paymentStatus)
+  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(Boolean(props.paymentStatus))
   const [activeOrder, setActiveOrder] = useState<Order | null>(props.order)
 
   const handleSwapOrConnectClick = async(data: SwapData) => {
