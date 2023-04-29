@@ -49,7 +49,7 @@ export default function Home(props: any) {
   const [usdcRate, setUsdcRate] = useState<number>(0)
   const [usdtRate, setUsdtRate] = useState<number>(0)
   const [clientSecret, setClientSecret] = useState<string>('')
-  const [paymentStatus, setPaymentStatus] = useState<string>('')
+  const [paymentStatus, setPaymentStatus] = useState<string>(props.paymentStatus)
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(props.paymentStatus !== '')
   const [activeOrder, setActiveOrder] = useState<Order | null>(props.order)
 
