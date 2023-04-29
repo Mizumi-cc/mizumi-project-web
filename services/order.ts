@@ -60,7 +60,7 @@ export const createUserProgramAccountTx = async (userId: string, token: string) 
 
 export const getUserOrders = async (userId: string, token: string) => {
   return await axios.get(
-    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v0/order/${userId}`,
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v0/order/by-user/${userId}`,
     {
       headers: {
         "Content-Type": "application/json",

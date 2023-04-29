@@ -33,7 +33,7 @@ import { TRANSACTIONKIND } from "../utils/enums"
 
 
 
-export default function Home() {
+export default function Home(props: any) {
   const router = useRouter()
   const { showLoginModal, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
@@ -50,8 +50,8 @@ export default function Home() {
   const [usdtRate, setUsdtRate] = useState<number>(0)
   const [clientSecret, setClientSecret] = useState<string>('')
   const [paymentStatus, setPaymentStatus] = useState<string>('')
-  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(false)
-  const [activeOrder, setActiveOrder] = useState<Order | null>(null)
+  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(props.paymentStatus !== '')
+  const [activeOrder, setActiveOrder] = useState<Order | null>(props.order)
 
   const handleSwapOrConnectClick = async(data: SwapData) => {
     if (!connected) {
@@ -178,25 +178,8 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    const { reference } = router.query
-    async function checkPayment() {
-      fetchOrder(reference as string)
-      await verifyPayment(reference as string)
-        .then((res) => {
-          setPaymentStatus(res.data.status)
-          setShowPaymentStatusModal(true)
-          if (res.data.status === 'success') {
-            handleCreditUserWallet(reference as string)
-          }
-        })
-        .catch((err) => {
-          setPaymentStatus('error')
-          setShowPaymentStatusModal(true)
-        })
-    }
-
-    if (reference) {
-      checkPayment()
+    if (props.paymentStatus === 'success') {
+      handleCreditUserWallet(props.order.id)
     }
   }, [])
 
@@ -244,4 +227,23 @@ export default function Home() {
       />
     </main>
   )
+}
+
+export async function getServerSideProps({ query }: { query: any}) {
+  const { reference } = query
+
+  if (reference) {
+    const order = await getOrder(reference as string)
+      .then(res => res.data)
+    
+    const response = await verifyPayment(reference as string)
+      .then((res) => res.data.status)
+      .catch((err) => 'error')
+    return {
+      props: {
+        order,
+        paymentStatus: response,
+      }
+    }
+  }
 }
