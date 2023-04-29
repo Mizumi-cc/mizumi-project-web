@@ -1,30 +1,44 @@
 import { useState, useEffect } from "react"
+import { useRouter } from "next/router"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
-import { PythConnection, getPythProgramKeyForCluster } from "@pythnetwork/client"
+import { PythHttpClient, getPythClusterApiUrl, getPythProgramKeyForCluster } from "@pythnetwork/client"
+import { VersionedTransaction, Connection } from "@solana/web3.js"
+
 // components
 import HTMLHead from "../components/HTMLHead"
 import Header from "../components/Header"
 import SwapBox from "../components/SwapBox"
 import CardCheckoutModal from "../components/CardCheckoutModal"
 import type { SwapData } from "../components/SwapBox"
-import { createOrder } from "../services/order"
-import type { Order } from "../utils/models"
 import type { CardInfo } from "../components/CardCheckoutModal"
-import { STABLES, TRANSACTIONKIND } from "../utils/enums"
 import RegisterModal from "../components/RegisterModal"
 import LoginModal from "../components/LoginModal"
-import { saveWalletAddress } from "../services/auth"
 import RatesBox from "../components/RatesBox"
-import { getGHSRates } from "../services/rates"
+import PaymentStatusModal from "../components/PaymentStatusModal"
 
 // stores
 import useAuthStore from "../stores/auth"
+import useUserOrdersStore from "../stores/userOrders"
+
+// services
+import { getGHSRates } from "../services/rates"
+import { verifyPayment } from "../services/payment"
+import { saveWalletAddress } from "../services/auth"
+import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit, getOrder } from "../services/order"
+
+// utils
+import type { Order } from "../utils/models"
+import { TRANSACTIONKIND } from "../utils/enums"
+
+
 
 export default function Home() {
-  const { showLoginModal, setToken, setUser, token, user,
+  const router = useRouter()
+  const { showLoginModal, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
-  const { connected, publicKey } = useWallet()
+  const { orders } = useUserOrdersStore()
+  const { connected, publicKey, signTransaction, sendTransaction } = useWallet()
   const { connection } = useConnection()
   const { setVisible } = useWalletModal()
 
@@ -34,32 +48,64 @@ export default function Home() {
   const [ghsRate, setGhsRate] = useState<number>(0)
   const [usdcRate, setUsdcRate] = useState<number>(0)
   const [usdtRate, setUsdtRate] = useState<number>(0)
+  const [clientSecret, setClientSecret] = useState<string>('')
+  const [paymentStatus, setPaymentStatus] = useState<string>('')
+  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(false)
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null)
 
-  const handleSwapOrConnectClick = (data: SwapData) => {
+  const handleSwapOrConnectClick = async(data: SwapData) => {
     if (!connected) {
       setVisible(true)
       return
     }
     setBusy(true)
-    setShowCheckoutModal(true)
-    if (data.debitType === 'Fiat') {
-      setShowCheckoutModal(true)
-    }
+    setSwapData(data)
+    const { txId, dbTransaction } = await handleCreateOrder(data)
+    await initiateDebit(
+      { txId: dbTransaction.id, userId: user!.id, blockchainTxId: txId },
+      token!
+    ).then((res) => {
+      if (res.status === 200) {
+        if (res.data.paymentLink) {
+          window.location.href = res.data.paymentLink
+        }
+      }
+    })
   }
 
   const completeCheckout = async (data: CardInfo) => {
     if (!swapData) return
+
+  }
+
+  const handleCreateProgramUserAccount = async () => {
+    if (orders.length !== 0) return
+
+    const serializedTransaction = await createUserProgramAccountTx(user!.id, token!)
+      .then((res) => res.data.serializedTransaction)
+    const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
+    await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+  }
+
+  const handleCreditUserWallet = async (txId: string) => {
+    const serializedTransaction = await initiateCredit(user!.id, txId, token!)
+      .then((res) => res.data.serializedTransaction)
+    const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
+    await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+  }
+
+  const handleCreateOrder = async (data: SwapData) => {
     const order: Order = {
-      fiatAmount: swapData.debitType === 'Fiat' ? swapData.debitAmount : swapData.creditAmount,
-      userId: '1',
-      tokenAmount: swapData.debitType === 'Fiat' ? swapData.creditAmount : swapData.debitAmount,
-      token: swapData.debitType === 'Fiat' ? swapData.creditCurrency : swapData.debitCurrency,
-      fiat: swapData.debitType === 'Fiat' ? swapData.debitCurrency : swapData.creditCurrency,
+      fiatAmount: data.debitType === 'Fiat' ? data.debitAmount : data.creditAmount,
+      userId: user!.id,
+      tokenAmount: data.debitType === 'Fiat' ? data.creditAmount : data.debitAmount,
+      token: data.debitType === 'Fiat' ? data.creditCurrency : data.debitCurrency,
+      fiat: data.debitType === 'Fiat' ? data.debitCurrency : data.creditCurrency,
       country: 'Ghana',
-      kind: swapData.debitType === 'Fiat' ? TRANSACTIONKIND.ONRAMP : TRANSACTIONKIND.OFFRAMP,
+      kind: data.debitType === 'Fiat' ? TRANSACTIONKIND.ONRAMP : TRANSACTIONKIND.OFFRAMP,
       rate: 10,
     }
-    const response = await createOrder(order)
+    const response = await createOrder(order, token!)
       .then(res => {
         if (res.status === 200) {
           return res.data
@@ -68,12 +114,25 @@ export default function Home() {
       .catch(err => {
         setBusy(false)
       })
-    
+    const txId = await signAndSendTransaciton(response.serializedTransaction)
+    return { txId, dbTransaction: response.dbTransaction }
+  }
+
+  const signAndSendTransaciton = async (solanaTx: string) => {
+    const tx = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(solanaTx, 'base64')))
+    console.log(tx, 'transaction')
+    return await sendTransaction(tx, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
   }
 
   const closeCheckoutModal = () => {
     setBusy(false)
     setShowCheckoutModal(false)
+  }
+
+  const fetchOrder = async (orderId: string) => {
+    const order = await getOrder(orderId)
+      .then(res => res.data)
+    setActiveOrder(order)
   }
 
   useEffect(() => {
@@ -92,27 +151,53 @@ export default function Home() {
     async function storeUserWallet() {
       if (connected && publicKey && user && !user?.walletAddress) {
         await saveWalletAddress(token!, publicKey!.toBase58())
+        handleCreateProgramUserAccount()
       }
     }
     storeUserWallet()
   }, [connected, user])
 
   useEffect(() => {
-    const pythConnection = new PythConnection(connection, getPythProgramKeyForCluster('devnet'))
-    pythConnection.onPriceChangeVerbose((productAccount, priceAccount) => {
-      const product = productAccount.accountInfo.data.product
-      const price = priceAccount.accountInfo.data
+   async function getPythPrices() {
+    const pythConnection = new Connection(getPythClusterApiUrl('devnet'))
+    const pythClient = new PythHttpClient(pythConnection, getPythProgramKeyForCluster('devnet'))
+    const data = await pythClient.getData()
+    for (const symbol of data.symbols) {
+      const price = data.productPrice.get(symbol)!
       if (price.price && price.confidence) {
-        if (product.symbol === 'Crypto.USDC/USD') {
-          console.log(`${product.symbol}: $${price.price} \xB1$${price.confidence}`)
+        if (symbol === 'Crypto.USDC/USD') {
           setUsdcRate(price.price)
-        } else if (product.symbol === 'Crypto.USDT/USD') {
-          console.log(`${product.symbol}: $${price.price} \xB1$${price.confidence}`)
+        } else if (symbol === 'Crypto.USDT/USD') {
           setUsdtRate(price.price)
         }
       }
-    })
-    pythConnection.start()
+    }
+   }
+
+    getPythPrices()
+  }, [])
+
+  useEffect(() => {
+    const { reference } = router.query
+    async function checkPayment() {
+      fetchOrder(reference as string)
+      await verifyPayment(reference as string)
+        .then((res) => {
+          setPaymentStatus(res.data.status)
+          setShowPaymentStatusModal(true)
+          if (res.data.status === 'success') {
+            handleCreditUserWallet(reference as string)
+          }
+        })
+        .catch((err) => {
+          setPaymentStatus('error')
+          setShowPaymentStatusModal(true)
+        })
+    }
+
+    if (reference) {
+      checkPayment()
+    }
   }, [])
 
   return (
@@ -138,6 +223,12 @@ export default function Home() {
           usdtRate={usdtRate}
         />
       </div>
+      <PaymentStatusModal
+        order={activeOrder}
+        isOpen={showPaymentStatusModal}
+        onClose={() => setShowPaymentStatusModal(false)}
+        status={paymentStatus}
+      />
       <CardCheckoutModal 
         isOpen={showCheckoutModal}
         onClose={closeCheckoutModal}

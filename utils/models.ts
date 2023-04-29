@@ -9,6 +9,12 @@ export type Order = {
   kind: TRANSACTIONKIND
   country: string
   rate: number
+  fiatTransactionId?: string
+  blockchainTransactionId?: string
+  errorReason?: string
+  settledDate?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type User = {

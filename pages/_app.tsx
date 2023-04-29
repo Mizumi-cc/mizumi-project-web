@@ -1,29 +1,32 @@
 import { useMemo, useEffect } from 'react'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base'
+import { SolflareWalletAdapter } from '@solana/wallet-adapter-wallets'
 import {
     WalletModalProvider,
 } from '@solana/wallet-adapter-react-ui'
 import '../styles/globals.css'
 import { AppProps } from 'next/app'
-import { clusterApiUrl } from '@solana/web3.js'
 import useAuthStore from '../stores/auth'
+import useUserOrdersStore from '../stores/userOrders'
 import { fetchAuthenticatedUser } from '../services/auth'
+import { getUserOrders } from '../services/order'
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const { setUser, setToken } = useAuthStore()
-  const network = WalletAdapterNetwork.Devnet
-  const endpoint = useMemo(() => clusterApiUrl(network), [network])
+  const { setUser, setToken, user, token } = useAuthStore()
+  const { orders, setOrders } = useUserOrdersStore()
+  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC
 
   const wallets = useMemo(
-    () => [],
+    () => [
+      new SolflareWalletAdapter(),
+    ],
     []
   )
 
   useEffect(() => {
-    async function checkForToken() {
+    async function autoLogin() {
       const token = sessionStorage.getItem('token')
       if (token) {
         const response = await fetchAuthenticatedUser(token)
@@ -41,13 +44,24 @@ function MyApp({ Component, pageProps }: AppProps) {
       }
     }
 
-    checkForToken()
+    autoLogin()
   }, [])
 
-  
+  useEffect(() => {
+    async function fetchUserOrders() {
+      if (user && token && orders.length === 0) {
+        const response = await getUserOrders(user.id, token)
+        if (response) {
+          setOrders(response.data.transactions)
+        }
+      }
+    }
+
+    fetchUserOrders()
+  }, [user, token])
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
+    <ConnectionProvider endpoint={endpoint!}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <Component {...pageProps} />
