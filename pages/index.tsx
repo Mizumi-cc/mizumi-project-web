@@ -172,10 +172,10 @@ export default function Home(props: any) {
   }, [])
 
   useEffect(() => {
-    if (props.paymentStatus === 'success') {
+    if (props.paymentStatus === 'success' && connected) {
       handleCreditUserWallet(props.order.id)
     }
-  }, [props])
+  }, [props, connected])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
