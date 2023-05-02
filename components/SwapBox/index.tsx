@@ -108,11 +108,11 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
 
   const payoutAmount = useMemo(() => {
     if (creditCurrency.symbol === "USDC") {
-      return (inputValue * rates.USDC).toLocaleString('en-US', { maximumFractionDigits: 2})
+      return ((inputValue / rates.GHS) * rates.USDC).toLocaleString('en-US', { maximumFractionDigits: 2})
     } else if (creditCurrency.symbol === "USDT") {
-      return (inputValue * rates.USDT).toLocaleString('en-US', { maximumFractionDigits: 2})
+      return ((inputValue / rates.GHS) * rates.USDT).toLocaleString('en-US', { maximumFractionDigits: 2})
     } else {
-      return (inputValue * rates.GHS).toLocaleString('en-US', { maximumFractionDigits: 2})
+      return (rates.GHS * inputValue).toLocaleString('en-US', { maximumFractionDigits: 2})
     }
   }, [debitCurrency, inputValue, rates])
 
