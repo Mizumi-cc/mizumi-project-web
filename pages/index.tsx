@@ -25,7 +25,7 @@ import useUserOrdersStore from "../stores/userOrders"
 import { getGHSRates } from "../services/rates"
 import { verifyPayment } from "../services/payment"
 import { saveWalletAddress } from "../services/auth"
-import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit, getOrder } from "../services/order"
+import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit, getOrder, completeOrder } from "../services/order"
 
 // utils
 import type { Order } from "../utils/models"
@@ -129,6 +129,15 @@ export default function Home(props: any) {
     setShowCheckoutModal(false)
   }
 
+  const handleCompleteFirstOrder = async () => {
+    const txId = 'abd14d98-9d4c-4e0f-8123-7d71c310ef33'
+    const tx = await completeOrder(txId, user!.id, token!)
+      .then(res => res.data.serializedTransaction)
+    const transactionHash = await signAndSendTransaciton(tx)
+    console.log(transactionHash, 'transaction hash')
+    
+  }
+
   useEffect(() => {
     async function getRates() {
       const response = await getGHSRates()
@@ -199,6 +208,11 @@ export default function Home(props: any) {
           ghsRate={ghsRate}
           usdtRate={usdtRate}
         />
+        <button
+          onClick={handleCompleteFirstOrder}
+        >
+          Complete first order
+        </button>
       </div>
       <PaymentStatusModal
         order={activeOrder}

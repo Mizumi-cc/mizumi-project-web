@@ -33,6 +33,19 @@ export const initiateDebit = async (data: DebitForm, token: string) => {
   )
 }
 
+export const completeOrder = async (userId: string, txId: string, token: string) => {
+  return await axios.post(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v0/order/complete`,
+    { userId, txId },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization":  `Bearer ${token}`
+      }
+    }
+  )
+}
+
 export const initiateCredit = async (userId: string, txId: string, token: string) => {
   return await axios.post(
    `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v0/order/credit`,
