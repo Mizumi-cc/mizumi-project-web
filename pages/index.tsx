@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { PythHttpClient, getPythClusterApiUrl, getPythProgramKeyForCluster } from "@pythnetwork/client"
-import { VersionedTransaction, Connection } from "@solana/web3.js"
+import { VersionedTransaction, Connection, } from "@solana/web3.js"
 
 // components
 import HTMLHead from "../components/HTMLHead"
@@ -38,7 +38,7 @@ export default function Home(props: any) {
   const { showLoginModal, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
   const { orders } = useUserOrdersStore()
-  const { connected, publicKey, signTransaction, sendTransaction } = useWallet()
+  const { connected, publicKey, sendTransaction } = useWallet()
   const { connection } = useConnection()
   const { setVisible } = useWalletModal()
 
@@ -48,7 +48,6 @@ export default function Home(props: any) {
   const [ghsRate, setGhsRate] = useState<number>(0)
   const [usdcRate, setUsdcRate] = useState<number>(0)
   const [usdtRate, setUsdtRate] = useState<number>(0)
-  const [clientSecret, setClientSecret] = useState<string>('')
   const [paymentStatus, setPaymentStatus] = useState<string>(props.paymentStatus)
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(Boolean(props.paymentStatus))
   const [activeOrder, setActiveOrder] = useState<Order | null>(props.order)
@@ -91,7 +90,16 @@ export default function Home(props: any) {
     const serializedTransaction = await initiateCredit(user!.id, txId, token!)
       .then((res) => res.data.serializedTransaction)
     const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
-    await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+    const hash = await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+    const blockhash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({ 
+      signature: hash, 
+      blockhash:blockhash.blockhash, 
+      lastValidBlockHeight: blockhash.lastValidBlockHeight 
+    }, 'confirmed').catch((err) => {
+      console.log(err)
+    })
+    handleCompleteFirstOrder(txId)
   }
 
   const handleCreateOrder = async (data: SwapData) => {
@@ -129,13 +137,11 @@ export default function Home(props: any) {
     setShowCheckoutModal(false)
   }
 
-  const handleCompleteFirstOrder = async () => {
-    const txId = 'abd14d98-9d4c-4e0f-8123-7d71c310ef33'
+  const handleCompleteFirstOrder = async (txId: string) => {
     const tx = await completeOrder(txId, user!.id, token!)
       .then(res => res.data.serializedTransaction)
     const transactionHash = await signAndSendTransaciton(tx)
     console.log(transactionHash, 'transaction hash')
-    
   }
 
   useEffect(() => {
@@ -208,11 +214,6 @@ export default function Home(props: any) {
           ghsRate={ghsRate}
           usdtRate={usdtRate}
         />
-        <button
-          onClick={handleCompleteFirstOrder}
-        >
-          Complete first order
-        </button>
       </div>
       <PaymentStatusModal
         order={activeOrder}
