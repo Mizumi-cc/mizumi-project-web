@@ -16,6 +16,7 @@ import RegisterModal from "../components/RegisterModal"
 import LoginModal from "../components/LoginModal"
 import RatesBox from "../components/RatesBox"
 import PaymentStatusModal from "../components/PaymentStatusModal"
+import SuccessModal from "../components/SuccessModal"
 
 // stores
 import useAuthStore from "../stores/auth"
@@ -51,6 +52,7 @@ export default function Home(props: any) {
   const [paymentStatus, setPaymentStatus] = useState<string>(props.paymentStatus)
   const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(Boolean(props.paymentStatus))
   const [activeOrder, setActiveOrder] = useState<Order | null>(props.order)
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false)
 
   const handleSwapOrConnectClick = async(data: SwapData) => {
     if (!connected) {
@@ -90,6 +92,7 @@ export default function Home(props: any) {
     const serializedTransaction = await initiateCredit(user!.id, txId, token!)
       .then((res) => res.data.serializedTransaction)
     const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
+    setShowPaymentStatusModal(false)
     const hash = await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
     const blockhash = await connection.getLatestBlockhash()
     await connection.confirmTransaction({ 
@@ -98,6 +101,7 @@ export default function Home(props: any) {
       lastValidBlockHeight: blockhash.lastValidBlockHeight 
     }, 'confirmed').catch((err) => {
       console.log(err)
+      setBusy(false)
     })
     handleCompleteOrder(txId)
   }
@@ -128,7 +132,6 @@ export default function Home(props: any) {
 
   const signAndSendTransaciton = async (solanaTx: string) => {
     const tx = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(solanaTx, 'base64')))
-    console.log(tx, 'transaction')
     return await sendTransaction(tx, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
   }
 
@@ -234,6 +237,10 @@ export default function Home(props: any) {
       <LoginModal 
         isOpen={showLoginModal}
         onClose={() => setShowLoginModal(false)}
+      />
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
       />
     </main>
   )
