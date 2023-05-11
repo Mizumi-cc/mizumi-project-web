@@ -81,6 +81,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
       setVisible(true)
       return
     }
+
     onSubmit({
       debitAmount: inputValue,
       debitCurrency: debitCurrency.symbol === 'GHS' ? FIATCURRENCY.GHS : debitCurrency.symbol === 'USDC' ? STABLES.USDC : STABLES.USDT,
@@ -92,7 +93,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
         accountNumber,
         walletAddress: creditAddress
       },
-      creditAmount: parseFloat(payoutAmount)
+      creditAmount: Number(payoutAmount)
     })
   }
 
@@ -108,11 +109,11 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
 
   const payoutAmount = useMemo(() => {
     if (creditCurrency.symbol === "USDC") {
-      return ((inputValue / rates.GHS) * rates.USDC).toLocaleString('en-US', { maximumFractionDigits: 2})
+      return ((inputValue / rates.GHS) * rates.USDC)
     } else if (creditCurrency.symbol === "USDT") {
-      return ((inputValue / rates.GHS) * rates.USDT).toLocaleString('en-US', { maximumFractionDigits: 2})
+      return ((inputValue / rates.GHS) * rates.USDT)
     } else {
-      return (rates.GHS * inputValue).toLocaleString('en-US', { maximumFractionDigits: 2})
+      return (rates.GHS * inputValue)
     }
   }, [debitCurrency, inputValue, rates])
 
@@ -165,7 +166,9 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             selectedCurrency={creditCurrency!}
             onChange={setCreditCurrency}
           />
-          <p className="text-white mr-2 text-lg">{payoutAmount}</p>
+          <p className="text-white mr-2 text-lg">
+            {payoutAmount.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2})}
+          </p>
         </div>
         <p className="text-white font-bold text-sm">Payout Info</p>
         <AnimatePresence>
