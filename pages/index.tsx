@@ -99,7 +99,7 @@ export default function Home(props: any) {
     }, 'confirmed').catch((err) => {
       console.log(err)
     })
-    handleCompleteFirstOrder(txId)
+    handleCompleteOrder(txId)
   }
 
   const handleCreateOrder = async (data: SwapData) => {
@@ -137,10 +137,11 @@ export default function Home(props: any) {
     setShowCheckoutModal(false)
   }
 
-  const handleCompleteFirstOrder = async (txId: string) => {
+  const handleCompleteOrder = async (txId: string) => {
     const tx = await completeOrder(user!.id, txId, token!)
       .then(res => res.data.serializedTransaction)
     const transactionHash = await signAndSendTransaciton(tx)
+    setBusy(false)
     console.log(transactionHash, 'transaction hash')
   }
 
@@ -148,7 +149,6 @@ export default function Home(props: any) {
     async function getRates() {
       const response = await getGHSRates()
       if (response) {
-        console.log(response.data)
         setGhsRate(response.data.rates.GHS)
       }
     }
