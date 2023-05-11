@@ -2,7 +2,7 @@ import CurrencyListbox from "."
 import { ComponentMeta, ComponentStory } from "@storybook/react"
 
 export default {
-  title: 'Compoennts/CurrencyListbox',
+  title: 'Components/CurrencyListbox',
   component: CurrencyListbox,
 } as ComponentMeta<typeof CurrencyListbox>
 

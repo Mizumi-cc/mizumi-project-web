@@ -2,7 +2,7 @@ import BankInfoInput from "."
 import { ComponentMeta, ComponentStory } from "@storybook/react"
 
 export default {
-  title: 'Compoennts/BankInfoInput',
+  title: 'Components/BankInfoInput',
   component: BankInfoInput,
 } as ComponentMeta<typeof BankInfoInput>
 

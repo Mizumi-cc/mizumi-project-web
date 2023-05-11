@@ -2,7 +2,7 @@ import CardCheckoutModal from "."
 import { ComponentMeta, ComponentStory } from "@storybook/react"
 
 export default {
-  title: 'Compoennts/CardCheckoutModal',
+  title: 'Components/CardCheckoutModal',
   component: CardCheckoutModal
 } as ComponentMeta<typeof CardCheckoutModal>
 
