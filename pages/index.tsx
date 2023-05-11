@@ -138,7 +138,7 @@ export default function Home(props: any) {
   }
 
   const handleCompleteFirstOrder = async (txId: string) => {
-    const tx = await completeOrder(txId, user!.id, token!)
+    const tx = await completeOrder(user!.id, txId, token!)
       .then(res => res.data.serializedTransaction)
     const transactionHash = await signAndSendTransaciton(tx)
     console.log(transactionHash, 'transaction hash')
@@ -187,8 +187,9 @@ export default function Home(props: any) {
   }, [])
 
   useEffect(() => {
-    if (props.paymentStatus === 'success' && connected) {
+    if (props.paymentStatus === 'success' && connected && !busy) {
       handleCreditUserWallet(props.order.id)
+      setBusy(true)
     }
   }, [props, connected])
 
