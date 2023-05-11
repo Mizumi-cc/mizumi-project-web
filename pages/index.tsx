@@ -187,11 +187,11 @@ export default function Home(props: any) {
   }, [])
 
   useEffect(() => {
-    if (props.paymentStatus === 'success' && connected && !busy) {
+    if (props.paymentStatus === 'success' && connected && !busy && user) {
       handleCreditUserWallet(props.order.id)
       setBusy(true)
     }
-  }, [props, connected, busy])
+  }, [props, connected, busy, user])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
