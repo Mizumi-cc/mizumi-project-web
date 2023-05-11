@@ -145,6 +145,7 @@ export default function Home(props: any) {
       .then(res => res.data.serializedTransaction)
     const transactionHash = await signAndSendTransaciton(tx)
     setBusy(false)
+    setShowSuccessModal(true)
     console.log(transactionHash, 'transaction hash')
   }
 
