@@ -191,7 +191,7 @@ export default function Home(props: any) {
       handleCreditUserWallet(props.order.id)
       setBusy(true)
     }
-  }, [props, connected])
+  }, [props, connected, busy])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
