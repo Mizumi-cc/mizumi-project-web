@@ -1,7 +1,7 @@
 import { FunctionComponent, Fragment } from "react"
 import { Dialog, Transition } from "@headlessui/react"
 import type { Order } from "../../utils/models"
-import { TRANSACTIONKIND } from "../../utils/enums"
+import { TRANSACTIONKIND, TRANSACTIONSTATUS } from "../../utils/enums"
 
 interface Props {
   order: Order | null
@@ -72,7 +72,7 @@ const PaymentStatusModal: FunctionComponent<Props> = ({
                 </Dialog.Title>
                 <div className="mt-2">
                   <p className="text-sm text-gray-500">
-                    {DESCRIPTIONMATRIX[status]} {order?.kind === TRANSACTIONKIND.ONRAMP && 'You should receive a prompt to complete the on-chain transfer.'}
+                    {DESCRIPTIONMATRIX[status]} {order?.kind === TRANSACTIONKIND.ONRAMP && status === "success" && 'You should receive a prompt to complete the on-chain transfer.'}
                   </p>
                 </div>
 
