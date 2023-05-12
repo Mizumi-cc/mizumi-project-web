@@ -90,6 +90,7 @@ export default function Home(props: any) {
   }
 
   const handleCreditUserWallet = async (txId: string) => {
+    setCredited(true)
     const serializedTransaction = await initiateCredit(user!.id, txId, token!)
       .then((res) => res.data.serializedTransaction)
     const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
@@ -108,7 +109,6 @@ export default function Home(props: any) {
   }
 
   const handleCreateOrder = async (data: SwapData) => {
-    setCredited(true)
     const order: Order = {
       fiatAmount: data.debitType === 'Fiat' ? data.debitAmount : data.creditAmount,
       userId: user!.id,
