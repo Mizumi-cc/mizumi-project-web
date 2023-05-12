@@ -205,7 +205,7 @@ export default function Home(props: any) {
       const order = await getOrder(props.reference as string)
         .then(res => res.data.transaction)
       
-      if (order.status === TRANSACTIONSTATUS.DEBITED) {
+      if (order.status !== TRANSACTIONSTATUS.DEBITING) {
         setActiveOrder(order)
         setPaymentStatus("success")
         setShowPaymentStatusModal(true)
