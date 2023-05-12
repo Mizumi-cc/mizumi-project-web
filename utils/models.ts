@@ -1,6 +1,7 @@
 import { FIATCURRENCY, STABLES, TRANSACTIONKIND } from "./enums"
 
 export type Order = {
+  id?: string
   userId: string
   fiatAmount: number
   fiat: FIATCURRENCY

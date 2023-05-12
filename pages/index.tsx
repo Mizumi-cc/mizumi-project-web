@@ -3,7 +3,7 @@ import { useRouter } from "next/router"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { PythHttpClient, getPythClusterApiUrl, getPythProgramKeyForCluster } from "@pythnetwork/client"
-import { VersionedTransaction, Connection, } from "@solana/web3.js"
+import { VersionedTransaction, Connection, Keypair, } from "@solana/web3.js"
 
 // components
 import HTMLHead from "../components/HTMLHead"
@@ -49,10 +49,11 @@ export default function Home(props: any) {
   const [ghsRate, setGhsRate] = useState<number>(0)
   const [usdcRate, setUsdcRate] = useState<number>(0)
   const [usdtRate, setUsdtRate] = useState<number>(0)
-  const [paymentStatus, setPaymentStatus] = useState<string>(props.paymentStatus)
-  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(Boolean(props.paymentStatus))
-  const [activeOrder, setActiveOrder] = useState<Order | null>(props.order)
+  const [paymentStatus, setPaymentStatus] = useState<string>('')
+  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(false)
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false)
+  const [credited, setCredited] = useState<boolean>(false)
 
   const handleSwapOrConnectClick = async(data: SwapData) => {
     if (!connected) {
@@ -107,6 +108,7 @@ export default function Home(props: any) {
   }
 
   const handleCreateOrder = async (data: SwapData) => {
+    setCredited(true)
     const order: Order = {
       fiatAmount: data.debitType === 'Fiat' ? data.debitAmount : data.creditAmount,
       userId: user!.id,
@@ -170,6 +172,7 @@ export default function Home(props: any) {
     storeUserWallet()
   }, [connected, user])
 
+
   useEffect(() => {
    async function getPythPrices() {
     const pythConnection = new Connection(getPythClusterApiUrl('devnet'))
@@ -191,11 +194,32 @@ export default function Home(props: any) {
   }, [])
 
   useEffect(() => {
-    if (props.paymentStatus === 'success' && connected && !busy && user) {
-      handleCreditUserWallet(props.order.id)
+    if (paymentStatus === 'success' && connected && user && !credited && activeOrder) {
+      handleCreditUserWallet(activeOrder.id as string)
       setBusy(true)
     }
-  }, [props, connected, busy, user])
+  }, [props, connected, user, credited, activeOrder])
+
+  useEffect(() => {
+    async function fetchOrderAndPaymentStatus() {
+      const order = await getOrder(props.reference as string)
+      .then(res => res.data.transaction)
+    
+      const response = await verifyPayment(props.reference as string)
+        .then((res) => res.data.data.status)
+        .catch((err) => {
+          console.log(err)
+          return 'error'
+        })
+      setActiveOrder(order)
+      setPaymentStatus(response)
+      if (response === 'success') {
+        setShowPaymentStatusModal(true)
+      }
+    }
+
+    fetchOrderAndPaymentStatus()
+  }, [])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
@@ -250,28 +274,9 @@ export default function Home(props: any) {
 export async function getServerSideProps({ query }: { query: any}) {
   const { reference } = query
 
-  if (reference) {
-    const order = await getOrder(reference as string)
-      .then(res => res.data.transaction)
-    
-    const response = await verifyPayment(reference as string)
-      .then((res) => res.data.data.status)
-      .catch((err) => {
-        console.log(err)
-        return 'error'
-      })
-    return {
-      props: {
-        order,
-        paymentStatus: response,
-      }
-    }
-  }
-
   return {
     props: {
-      order: null,
-      paymentStatus: null,
+      reference
     }
   }
 }
