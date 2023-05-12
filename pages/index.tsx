@@ -30,7 +30,7 @@ import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit,
 
 // utils
 import type { Order } from "../utils/models"
-import { TRANSACTIONKIND } from "../utils/enums"
+import { TRANSACTIONKIND, TRANSACTIONSTATUS } from "../utils/enums"
 
 
 
@@ -201,24 +201,18 @@ export default function Home(props: any) {
   }, [props, connected, user, credited, activeOrder])
 
   useEffect(() => {
-    async function fetchOrderAndPaymentStatus() {
+    async function fetchOrder() {
       const order = await getOrder(props.reference as string)
-      .then(res => res.data.transaction)
-    
-      const response = await verifyPayment(props.reference as string)
-        .then((res) => res.data.data.status)
-        .catch((err) => {
-          console.log(err)
-          return 'error'
-        })
-      setActiveOrder(order)
-      setPaymentStatus(response)
-      if (response === 'success') {
+        .then(res => res.data.transaction)
+      
+      if (order.status === TRANSACTIONSTATUS.DEBITED) {
+        setActiveOrder(order)
+        setPaymentStatus("success")
         setShowPaymentStatusModal(true)
       }
     }
 
-    fetchOrderAndPaymentStatus()
+    fetchOrder()
   }, [])
 
   return (
