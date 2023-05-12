@@ -270,7 +270,7 @@ export async function getServerSideProps({ query }: { query: any}) {
 
   return {
     props: {
-      reference
+      reference: reference || null
     }
   }
 }
