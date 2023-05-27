@@ -125,18 +125,18 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   const checkForm = () => {
     let valid = true
     if (debitCurrency.symbol === 'GHS') {
-      if (selectedPayoutMethod === 'Bank') {
+      if (creditAddress === '') {
+        addAlert({
+          type: 'info',
+          text: 'Please fill in all fields'
+        })
+        valid = false
+      }
+    } else {
+      if (selectedPayoutMethod === 'bank') {
         if (accountName === '' || accountNumber === '' || selectedBank.name === '') {
           addAlert({
             type: 'error',
-            text: 'Please fill in all fields'
-          })
-          valid = false
-        }
-      } else if (selectedPayoutMethod === 'Wallet') {
-        if (creditAddress === '') {
-          addAlert({
-            type: 'info',
             text: 'Please fill in all fields'
           })
           valid = false
@@ -149,14 +149,6 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
           })
           valid = false
         }
-      }
-    } else {
-      if (creditAddress === '') {
-        addAlert({
-          type: 'info',
-          text: 'Please fill in all fields'
-        })
-        valid = false
       }
     }
     return valid
