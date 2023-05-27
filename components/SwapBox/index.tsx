@@ -5,6 +5,7 @@ import { AnimatePresence } from "framer-motion"
 import { PublicKey } from "@solana/web3.js"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 
+// components
 import SwapInput from "../SwapInput"
 import CurrencyListbox from "../CurrencyListbox"
 import { CURRENCIES } from "../../utils/constants"
@@ -13,9 +14,13 @@ import type { Bank } from "../BankInfoInput"
 import BankInfoInput from "../BankInfoInput"
 import WalletInput from "../WalletInput"
 import Loading from "../Loading"
+import MomoInput from "../MomoInput"
+import PayoutMethods from "../PayoutMethods"
+
+// stores, utils
 import { STABLES, FIATCURRENCY } from "../../utils/enums"
 import useAuthStore from "../../stores/auth"
-
+import useAlertStore from "../../stores/alerts"
 interface SwapBoxProps {
   busy: boolean
   rates: Record<string, number>
@@ -32,6 +37,9 @@ export interface SwapData {
     accountNumber?: string
     accountName?: string
     walletAddress?: string
+    momoNumber?: string
+    momoName?: string
+    momoNetwork?: string
   }
   creditAmount: number
 }
@@ -41,14 +49,20 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   const { setVisible } = useWalletModal()
   const user = useAuthStore((state) => state.user)
   const { setShowLoginModal } = useAuthStore()
+  const { addAlert } = useAlertStore()
+
   const [inputValue, setInputValue] = useState(0)
   const [debitCurrency, setDebitCurrency] = useState<Currency>(CURRENCIES[0])
   const [creditCurrency, setCreditCurrency] = useState<Currency>(CURRENCIES[1])
+  const [selectedPayoutMethod, setSelectedPayoutMethod] = useState<string>('')
   const [selectedBank, setSelectedBank] = useState<Bank>(banks[1])
   const [accountNumber, setAccountNumber] = useState('')
   const [accountName, setAccountName] = useState('')
   const [addressIsValid, setAddressIsValid] = useState(false)
   const [creditAddress, setCreditAddress] = useState<string>('')
+  const [phone, setPhone] = useState<string>('')
+  const [momoAccountName, setMomoAccountName] = useState<string>('')
+  const [momoNetwork, setMomoNetwork] = useState<string>('MTN')
 
   const firstCurrencyList = useMemo(() => {
     if (creditCurrency.symbol === 'GHS')  {
@@ -67,6 +81,9 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   }, [debitCurrency, creditCurrency])
 
   const switchCurrencies = () => {
+    if (debitCurrency.symbol === 'GHS') {
+      setSelectedPayoutMethod('')
+    }
     setDebitCurrency(creditCurrency)
     setCreditCurrency(debitCurrency)
   }
@@ -82,6 +99,10 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
       return
     }
 
+    if (!checkForm()) {
+      return
+    }
+
     onSubmit({
       debitAmount: inputValue,
       debitCurrency: debitCurrency.symbol === 'GHS' ? FIATCURRENCY.GHS : debitCurrency.symbol === 'USDC' ? STABLES.USDC : STABLES.USDT,
@@ -91,10 +112,68 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
         bankName: selectedBank.name,
         accountName,
         accountNumber,
-        walletAddress: creditAddress
+        walletAddress: creditAddress,
+        momoNumber: phone,
+        momoName: momoAccountName,
+        momoNetwork: momoNetwork
       },
       creditAmount: Number(payoutAmount)
     })
+    resetForm()
+  }
+
+  const checkForm = () => {
+    let valid = true
+    if (debitCurrency.symbol === 'GHS') {
+      if (selectedPayoutMethod === 'Bank') {
+        if (accountName === '' || accountNumber === '' || selectedBank.name === '') {
+          addAlert({
+            type: 'error',
+            text: 'Please fill in all fields'
+          })
+          valid = false
+        }
+      } else if (selectedPayoutMethod === 'Wallet') {
+        if (creditAddress === '') {
+          addAlert({
+            type: 'info',
+            text: 'Please fill in all fields'
+          })
+          valid = false
+        }
+      } else {
+        if (phone === '' || momoAccountName === '') {
+          addAlert({
+            type: 'info',
+            text: 'Please fill in all fields'
+          })
+          valid = false
+        }
+      }
+    } else {
+      if (creditAddress === '') {
+        addAlert({
+          type: 'info',
+          text: 'Please fill in all fields'
+        })
+        valid = false
+      }
+    }
+    return valid
+  }
+
+  const resetForm = () => {
+    setInputValue(0)
+    setDebitCurrency(CURRENCIES[0])
+    setCreditCurrency(CURRENCIES[1])
+    setSelectedPayoutMethod('')
+    setSelectedBank(banks[1])
+    setAccountNumber('')
+    setAccountName('')
+    setCreditAddress('')
+    setPhone('')
+    setMomoAccountName('')
+    setMomoNetwork('MTN')
   }
 
   const prettyValue = useMemo(() => {
@@ -172,7 +251,12 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
         </div>
         <p className="text-white font-bold text-sm">Payout Info</p>
         <AnimatePresence>
-          {creditCurrency?.name === 'Ghana Cedi' && (
+          {creditCurrency?.name === 'Ghana Cedi' && selectedPayoutMethod === '' && (
+            <PayoutMethods 
+              onSubmit={setSelectedPayoutMethod}
+            />
+          )}
+          {selectedPayoutMethod === 'bank' && (
             <BankInfoInput 
               banks={banks}
               selectedBank={selectedBank}
@@ -181,6 +265,16 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
               onAccountNumberChange={setAccountNumber}
               accountName={accountName}
               onAccountNameChange={setAccountName}
+            />
+          )}
+          {selectedPayoutMethod === 'momo' && (
+            <MomoInput 
+              phone={phone}
+              onPhoneChange={setPhone}
+              name={momoAccountName}
+              onNameChange={setMomoAccountName}
+              network={momoNetwork}
+              onNetworkChange={setMomoNetwork}
             />
           )}
           {creditCurrency?.name !== 'Ghana Cedi' && (

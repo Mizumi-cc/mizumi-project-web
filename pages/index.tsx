@@ -1,17 +1,14 @@
 import { useState, useEffect } from "react"
-import { useRouter } from "next/router"
 import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { PythHttpClient, getPythClusterApiUrl, getPythProgramKeyForCluster } from "@pythnetwork/client"
-import { VersionedTransaction, Connection, Keypair, } from "@solana/web3.js"
+import { VersionedTransaction, Connection } from "@solana/web3.js"
 
 // components
 import HTMLHead from "../components/HTMLHead"
 import Header from "../components/Header"
 import SwapBox from "../components/SwapBox"
-import CardCheckoutModal from "../components/CardCheckoutModal"
 import type { SwapData } from "../components/SwapBox"
-import type { CardInfo } from "../components/CardCheckoutModal"
 import RegisterModal from "../components/RegisterModal"
 import LoginModal from "../components/LoginModal"
 import RatesBox from "../components/RatesBox"
@@ -24,18 +21,15 @@ import useUserOrdersStore from "../stores/userOrders"
 
 // services
 import { getGHSRates } from "../services/rates"
-import { verifyPayment } from "../services/payment"
 import { saveWalletAddress } from "../services/auth"
 import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit, getOrder, completeOrder } from "../services/order"
 
 // utils
 import type { Order } from "../utils/models"
-import { TRANSACTIONKIND, TRANSACTIONSTATUS } from "../utils/enums"
-
+import { STABLES, TRANSACTIONKIND, TRANSACTIONSTATUS } from "../utils/enums"
 
 
 export default function Home(props: any) {
-  const router = useRouter()
   const { showLoginModal, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
   const { orders } = useUserOrdersStore()
@@ -45,7 +39,6 @@ export default function Home(props: any) {
 
   const [busy, setBusy] = useState<boolean>(false)
   const [swapData, setSwapData] = useState<SwapData | null>(null)
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false)
   const [ghsRate, setGhsRate] = useState<number>(0)
   const [usdcRate, setUsdcRate] = useState<number>(0)
   const [usdtRate, setUsdtRate] = useState<number>(0)
@@ -64,20 +57,18 @@ export default function Home(props: any) {
     setSwapData(data)
     const { txId, dbTransaction } = await handleCreateOrder(data)
     await initiateDebit(
-      { txId: dbTransaction.id, userId: user!.id, blockchainTxId: txId },
+      { txId: dbTransaction.id, userId: user!.id, blockchainTxId: txId! },
       token!
-    ).then((res) => {
+    ).then(async (res) => {
       if (res.status === 200) {
         if (res.data.paymentLink) {
           window.location.href = res.data.paymentLink
+        } else if (res.data.serializedTransaction) {
+          const hash = await signAndSendTransaciton(res.data.serializedTransaction)
+          confirmTxAndCreditFiat(hash!, dbTransaction.id)
         }
       }
     })
-  }
-
-  const completeCheckout = async (data: CardInfo) => {
-    if (!swapData) return
-
   }
 
   const handleCreateProgramUserAccount = async () => {
@@ -108,6 +99,22 @@ export default function Home(props: any) {
     handleCompleteOrder(txId)
   }
 
+  const confirmTxAndCreditFiat = async (hash: string, txId: string) => {
+    await connection.confirmTransaction(hash, 'confirmed')
+      .catch((err) => {
+        console.log(err)
+        setBusy(false)
+      })
+    await initiateCredit(user!.id, txId, token!)
+      .catch((err) => {
+        console.log(err)
+        setBusy(false)
+      })
+    handleCompleteOrder(txId)
+  }
+
+
+
   const handleCreateOrder = async (data: SwapData) => {
     const order: Order = {
       fiatAmount: data.debitType === 'Fiat' ? data.debitAmount : data.creditAmount,
@@ -117,7 +124,19 @@ export default function Home(props: any) {
       fiat: data.debitType === 'Fiat' ? data.debitCurrency : data.creditCurrency,
       country: 'Ghana',
       kind: data.debitType === 'Fiat' ? TRANSACTIONKIND.ONRAMP : TRANSACTIONKIND.OFFRAMP,
-      rate: 10,
+      fiatRate: ghsRate,
+      tokenRate: data.debitType === 'Fiat' ? data.creditCurrency === STABLES.USDC ? usdcRate : usdtRate : ghsRate,
+      payoutInfo: data.debitType === 'Fiat' ? {
+        method: 'wallet',
+        walletAddress: data.creditInfo.walletAddress
+      } : {
+        method: data.creditInfo.accountNumber ? 'bank' : 'mobile',
+        accountNumber: data.creditInfo.accountNumber,
+        accountName: data.creditInfo.accountName,
+        momoNumber: data.creditInfo.momoNumber,
+        momoName: data.creditInfo.momoName,
+        momoNetwork: data.creditInfo.momoNetwork
+      }
     }
     const response = await createOrder(order, token!)
       .then(res => {
@@ -129,17 +148,16 @@ export default function Home(props: any) {
         setBusy(false)
       })
     const txId = await signAndSendTransaciton(response.serializedTransaction)
+    await connection.confirmTransaction(txId!, 'confirmed')
     return { txId, dbTransaction: response.dbTransaction }
   }
 
   const signAndSendTransaciton = async (solanaTx: string) => {
     const tx = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(solanaTx, 'base64')))
     return await sendTransaction(tx, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
-  }
-
-  const closeCheckoutModal = () => {
-    setBusy(false)
-    setShowCheckoutModal(false)
+      .catch((err) => {
+        setBusy(false)
+      })
   }
 
   const handleCompleteOrder = async (txId: string) => {
@@ -212,8 +230,11 @@ export default function Home(props: any) {
       }
     }
 
-    fetchOrder()
+    if (props.reference) {
+      fetchOrder()
+    }
   }, [])
+
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
@@ -243,11 +264,6 @@ export default function Home(props: any) {
         isOpen={showPaymentStatusModal}
         onClose={() => setShowPaymentStatusModal(false)}
         status={paymentStatus}
-      />
-      <CardCheckoutModal 
-        isOpen={showCheckoutModal}
-        onClose={closeCheckoutModal}
-        onSubmit={completeCheckout}
       />
       <RegisterModal 
         isOpen={showRegisterModal}
