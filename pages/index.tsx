@@ -180,6 +180,7 @@ export default function Home(props: any) {
       console.log('connected')
     })
     socket.on('order', (msg) => {
+      console.log(msg)
       if (msg.id === props.reference && msg.status === 'debited') {
         setPaymentVerified(true)
         handleCreditUserWallet(activeOrder!.id as string)
@@ -230,7 +231,7 @@ export default function Home(props: any) {
   }, [])
 
   useEffect(() => {
-    if (paymentStatus === 'success' && connected && user && !credited && activeOrder) {
+    if (connected && user && !credited && activeOrder) {
       setBusy(true)
       setShowVerifyingModal(true)
     }
