@@ -12,6 +12,7 @@ import { fetchAuthenticatedUser } from '../services/auth'
 import { getUserOrders } from '../services/order'
 import Toast from '../components/Toast'
 import useAlertStore from '../stores/alerts'
+import { Analytics } from '@vercel/analytics/react';
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 
@@ -68,6 +69,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <Component {...pageProps} />
+          <Analytics />
           <Toast messages={alerts} />
         </WalletModalProvider>
       </WalletProvider>
