@@ -55,8 +55,8 @@ const VeryfyingPayment: FunctionComponent<Props> = ({ isOpen, onClose, verified 
                   </p>
                 )}
                 {verified && (
-                  <div className="mt-2">
-                    <p className="text-sm text-gray-500">
+                  <div>
+                    <p className="text-center">
                       Your payment has been verified. You should receive a prompt to complete the on-chain transfer.
                     </p>
                   </div>

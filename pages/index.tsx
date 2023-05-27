@@ -87,6 +87,8 @@ export default function Home(props: any) {
 
   const handleCreditUserWallet = async (userId: string) => {
     setCredited(true)
+    const token = sessionStorage.getItem('token')
+
     const serializedTransaction = await initiateCredit(userId, props.reference, token!)
       .then((res) => res.data.serializedTransaction)
     const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
