@@ -3,6 +3,7 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import { useWalletModal } from "@solana/wallet-adapter-react-ui"
 import { PythHttpClient, getPythClusterApiUrl, getPythProgramKeyForCluster } from "@pythnetwork/client"
 import { VersionedTransaction, Connection } from "@solana/web3.js"
+import io from "socket.io-client"
 
 // components
 import HTMLHead from "../components/HTMLHead"
@@ -14,6 +15,7 @@ import LoginModal from "../components/LoginModal"
 import RatesBox from "../components/RatesBox"
 import PaymentStatusModal from "../components/PaymentStatusModal"
 import SuccessModal from "../components/SuccessModal"
+import VeryfyingPaymentModal from "../components/VeryfyingPaymentModal"
 
 // stores
 import useAuthStore from "../stores/auth"
@@ -28,6 +30,7 @@ import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit,
 import type { Order } from "../utils/models"
 import { STABLES, TRANSACTIONKIND, TRANSACTIONSTATUS } from "../utils/enums"
 
+let socket
 
 export default function Home(props: any) {
   const { showLoginModal, token, user,
@@ -47,6 +50,8 @@ export default function Home(props: any) {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false)
   const [credited, setCredited] = useState<boolean>(false)
+  const [showVerifyingModal, setShowVerifyingModal] = useState<boolean>(false)
+  const [paymentVerified, setPaymentVerified] = useState<boolean>(false)
 
   const handleSwapOrConnectClick = async(data: SwapData) => {
     if (!connected) {
@@ -85,7 +90,7 @@ export default function Home(props: any) {
     const serializedTransaction = await initiateCredit(user!.id, txId, token!)
       .then((res) => res.data.serializedTransaction)
     const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
-    setShowPaymentStatusModal(false)
+    setShowVerifyingModal(false)
     const hash = await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
     const blockhash = await connection.getLatestBlockhash()
     await connection.confirmTransaction({ 
@@ -169,6 +174,19 @@ export default function Home(props: any) {
     console.log(transactionHash, 'transaction hash')
   }
 
+  const initializeSocket = async () => {
+    socket = io(process.env.NEXT_PUBLIC_SERVER_URL!)
+    socket.on('connect', () => {
+      console.log('connected')
+    })
+    socket.on('order', (msg) => {
+      if (msg.id === props.reference && msg.status === 'debited') {
+        setPaymentVerified(true)
+        handleCreditUserWallet(activeOrder!.id as string)
+      }
+    })
+  }
+
   useEffect(() => {
     async function getRates() {
       const response = await getGHSRates()
@@ -213,8 +231,8 @@ export default function Home(props: any) {
 
   useEffect(() => {
     if (paymentStatus === 'success' && connected && user && !credited && activeOrder) {
-      handleCreditUserWallet(activeOrder.id as string)
       setBusy(true)
+      setShowVerifyingModal(true)
     }
   }, [props, connected, user, credited, activeOrder])
 
@@ -222,12 +240,8 @@ export default function Home(props: any) {
     async function fetchOrder() {
       const order = await getOrder(props.reference as string)
         .then(res => res.data.transaction)
-      
-      if (order.status !== TRANSACTIONSTATUS.DEBITING) {
-        setActiveOrder(order)
-        setPaymentStatus("success")
-        setShowPaymentStatusModal(true)
-      }
+
+      setActiveOrder(order)
     }
 
     if (props.reference) {
@@ -235,6 +249,9 @@ export default function Home(props: any) {
     }
   }, [])
 
+  useEffect(() => {
+    initializeSocket()
+  }, [])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
@@ -259,12 +276,12 @@ export default function Home(props: any) {
           usdtRate={usdtRate}
         />
       </div>
-      <PaymentStatusModal
+      {/* <PaymentStatusModal
         order={activeOrder}
         isOpen={showPaymentStatusModal}
         onClose={() => setShowPaymentStatusModal(false)}
         status={paymentStatus}
-      />
+      /> */}
       <RegisterModal 
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
@@ -276,6 +293,11 @@ export default function Home(props: any) {
       <SuccessModal 
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
+      />
+      <VeryfyingPaymentModal 
+        isOpen={showVerifyingModal}
+        onClose={() => setShowVerifyingModal(false)}
+        verified={paymentVerified}
       />
     </main>
   )
