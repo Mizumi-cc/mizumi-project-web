@@ -9,13 +9,14 @@ export type Order = {
   token: STABLES
   kind: TRANSACTIONKIND
   country: string
-  rate: number
-  fiatTransactionId?: string
-  blockchainTransactionId?: string
+  fiatRate: number
+  tokenRate: number
+  transactionHash?: string
   errorReason?: string
   settledDate?: string
   createdAt?: string
   updatedAt?: string
+  payoutInfo?: any
 }
 
 export type User = {
@@ -25,4 +26,9 @@ export type User = {
   walletAddress: string
   createdAt: string
   updatedAt: string
+}
+
+export type Alert = {
+  text: string
+  type: "success" | "error" | "warning" | "info"
 }
