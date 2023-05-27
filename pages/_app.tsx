@@ -10,12 +10,15 @@ import useAuthStore from '../stores/auth'
 import useUserOrdersStore from '../stores/userOrders'
 import { fetchAuthenticatedUser } from '../services/auth'
 import { getUserOrders } from '../services/order'
+import Toast from '../components/Toast'
+import useAlertStore from '../stores/alerts'
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 
 function MyApp({ Component, pageProps }: AppProps) {
   const { setUser, setToken, user, token } = useAuthStore()
   const { orders, setOrders } = useUserOrdersStore()
+  const { alerts } = useAlertStore()
   const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC
 
   const wallets = useMemo(
@@ -65,6 +68,7 @@ function MyApp({ Component, pageProps }: AppProps) {
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>
           <Component {...pageProps} />
+          <Toast messages={alerts} />
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
