@@ -50,7 +50,7 @@ export default function Home(props: any) {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false)
   const [credited, setCredited] = useState<boolean>(false)
-  const [showVerifyingModal, setShowVerifyingModal] = useState<boolean>(true)
+  const [showVerifyingModal, setShowVerifyingModal] = useState<boolean>(false)
   const [paymentVerified, setPaymentVerified] = useState<boolean>(false)
 
   const handleSwapOrConnectClick = async(data: SwapData) => {
@@ -232,7 +232,6 @@ export default function Home(props: any) {
 
   useEffect(() => {
     if (connected && user && !credited && activeOrder && props.reference) {
-      console.log(props.reference, 'reference')
       setBusy(true)
       setShowVerifyingModal(true)
     }
