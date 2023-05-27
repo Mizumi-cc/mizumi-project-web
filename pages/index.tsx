@@ -85,9 +85,9 @@ export default function Home(props: any) {
     await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
   }
 
-  const handleCreditUserWallet = async (txId: string) => {
+  const handleCreditUserWallet = async () => {
     setCredited(true)
-    const serializedTransaction = await initiateCredit(user!.id, txId, token!)
+    const serializedTransaction = await initiateCredit(user!.id, props.reference, token!)
       .then((res) => res.data.serializedTransaction)
     const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
     setShowVerifyingModal(false)
@@ -101,7 +101,7 @@ export default function Home(props: any) {
       console.log(err)
       setBusy(false)
     })
-    handleCompleteOrder(txId)
+    handleCompleteOrder(props.reference)
   }
 
   const confirmTxAndCreditFiat = async (hash: string, txId: string) => {
@@ -183,7 +183,7 @@ export default function Home(props: any) {
       console.log(msg)
       if (msg.id === props.reference && msg.status === 'debited') {
         setPaymentVerified(true)
-        handleCreditUserWallet(msg.id as string)
+        handleCreditUserWallet()
       }
     })
   }

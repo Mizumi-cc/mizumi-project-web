@@ -49,9 +49,11 @@ const VeryfyingPayment: FunctionComponent<Props> = ({ isOpen, onClose, verified 
                 >
                   {verified ? "Payment Verified" : "Verifying Payment"}
                 </div>
-                <p>
-                  Please wait...
-                </p>
+                {!verified && (
+                  <p>
+                    Please wait...
+                  </p>
+                )}
                 {verified && (
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
