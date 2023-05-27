@@ -231,7 +231,7 @@ export default function Home(props: any) {
   }, [])
 
   useEffect(() => {
-    if (connected && user && !credited && activeOrder) {
+    if (connected && user && !credited && activeOrder && props.reference) {
       setBusy(true)
       setShowVerifyingModal(true)
     }
