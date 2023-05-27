@@ -176,7 +176,7 @@ export default function Home(props: any) {
 
   const initializeSocket = async () => {
     socket = io(process.env.NEXT_PUBLIC_SERVER_URL!)
-    socket.on('connect', () => {
+    socket.on('news', () => {
       console.log('connected')
     })
     socket.on('order', (msg) => {
