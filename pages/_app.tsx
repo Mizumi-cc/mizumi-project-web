@@ -19,8 +19,18 @@ require('@solana/wallet-adapter-react-ui/styles.css')
 function MyApp({ Component, pageProps }: AppProps) {
   const { setUser, setToken, user, token } = useAuthStore()
   const { orders, setOrders } = useUserOrdersStore()
-  const { alerts } = useAlertStore()
+  const { alerts, reset } = useAlertStore()
   const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC
+
+  // hide alert popup after 5 seconds
+  const unSub = useAlertStore.subscribe((state) => {
+    if (state.alerts.length > 0) {
+      setTimeout(() => {
+        reset()
+      }, 5000)
+    }
+  })
+  
 
   const wallets = useMemo(
     () => [
@@ -63,6 +73,12 @@ function MyApp({ Component, pageProps }: AppProps) {
 
     fetchUserOrders()
   }, [user, token])
+
+  useEffect(() => {
+    return () => {
+      unSub()
+    }
+  })
 
   return (
     <ConnectionProvider endpoint={endpoint!}>
