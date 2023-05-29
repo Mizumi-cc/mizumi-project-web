@@ -91,15 +91,10 @@ export default function Home(props: any) {
 
     const serializedTransaction = await initiateCredit(userId, props.reference, token!)
       .then((res) => res.data.serializedTransaction)
-    const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
-    setShowVerifyingModal(false)
-    if (!connected) {
-      await connect()
-    }
-    const hash = await sendTransaction(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+    const hash = await signAndSendTransaciton(serializedTransaction)
     const blockhash = await connection.getLatestBlockhash()
     await connection.confirmTransaction({ 
-      signature: hash, 
+      signature: hash!, 
       blockhash:blockhash.blockhash, 
       lastValidBlockHeight: blockhash.lastValidBlockHeight 
     }, 'confirmed').catch((err) => {
