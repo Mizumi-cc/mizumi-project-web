@@ -36,7 +36,7 @@ export default function Home(props: any) {
   const { showLoginModal, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
   const { orders } = useUserOrdersStore()
-  const { connected, publicKey, sendTransaction } = useWallet()
+  const { connected, publicKey, sendTransaction, connect } = useWallet()
   const { connection } = useConnection()
   const { setVisible } = useWalletModal()
 
@@ -93,7 +93,10 @@ export default function Home(props: any) {
       .then((res) => res.data.serializedTransaction)
     const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
     setShowVerifyingModal(false)
-    const hash = await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+    if (!connected) {
+      await connect()
+    }
+    const hash = await sendTransaction(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
     const blockhash = await connection.getLatestBlockhash()
     await connection.confirmTransaction({ 
       signature: hash, 
