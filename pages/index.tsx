@@ -267,7 +267,7 @@ export default function Home(props: any) {
 
   useEffect(() => {
     if(connected && showVerifyingModal && busy && activeOrder && paymentVerified) {
-      handleCreditUserWallet(activeOrder.user_id)
+      handleCreditUserWallet(activeOrder.userId)
     }
   }, [connected, showVerifyingModal, busy, activeOrder, paymentVerified])
 
