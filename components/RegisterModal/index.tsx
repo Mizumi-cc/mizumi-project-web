@@ -5,6 +5,7 @@ import FormInput from "../FormInput"
 import useAuthStore from "../../stores/auth"
 import { RegisterForm, register, isUniqueUsernameOrEmail } from "../../services/auth"
 import Loading from "../Loading"
+import useAlertStore from "../../stores/alerts"
 
 interface Props {
   isOpen: boolean
@@ -15,6 +16,7 @@ const RegisterModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
   const { setUser, setToken, setShowLoginModal } = useAuthStore()
+    const { addAlert } = useAlertStore()
   const [busy, setBusy] = useState<boolean>(false)
   const [username, setUsername] = useState<string>('')
   const [email, setEmail] = useState<string>('')
@@ -28,6 +30,18 @@ const RegisterModal: FunctionComponent<Props> = ({
   }
 
   const handleSubmit = async() => {
+    checkUsername()
+    checkEmail()
+    checkPassword()
+
+    if (Object.keys(errors).length > 0) {
+      addAlert({
+        type: 'info',
+        text: 'Please fill the form correctly'
+      })
+      return
+    }
+
     const form: RegisterForm = {
       username: username.trim(),
       email: email.trim(),
@@ -167,6 +181,7 @@ const RegisterModal: FunctionComponent<Props> = ({
                 <form
                   className="mt-2 space-y-2 flex flex-col px-6"
                   onClick={(e) => e.preventDefault()}
+                  onSubmit={handleSubmit}
                 >
                   <FormInput 
                     label="Username"

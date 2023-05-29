@@ -5,6 +5,7 @@ import FormInput from "../FormInput"
 import useAuthStore from "../../stores/auth"
 import { LoginForm, login } from "../../services/auth"
 import Loading from "../Loading"
+import useAlertStore from "../../stores/alerts"
 
 interface Props {
   isOpen: boolean
@@ -15,12 +16,24 @@ const LoginModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
   const { setUser, setToken, setShowRegisterModal } = useAuthStore()
+  const { addAlert } = useAlertStore()
   const [busy, setBusy] = useState<boolean>(false)
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const handleSubmit = async() => {
+    checkPassword()
+    checkUsernameOrEmail()
+
+    console.log(errors)
+    if (Object.keys(errors).length > 0) {
+      addAlert({
+        type: 'info',
+        text: 'Please fill the form correctly'
+      })
+      return
+    }
     setBusy(true)
     const form = generateForm()
     const response = await login(form)
