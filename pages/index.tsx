@@ -236,19 +236,12 @@ export default function Home(props: any) {
   }, [])
 
   useEffect(() => {
-    if (connected && user && !credited && activeOrder && props.reference) {
-      setBusy(true)
-      setShowVerifyingModal(true)
-    }
-  }, [props, connected, user, credited, activeOrder])
-
-  useEffect(() => {
     async function fetchOrder() {
       const order = await getOrder(props.reference as string)
         .then(res => res.data.transaction)
 
       setActiveOrder(order)
-      
+
       if (order.status !== TRANSACTIONSTATUS.DEBITING) {
         setPaymentVerified(true)
         console.log(connected, 'connected')
@@ -257,6 +250,8 @@ export default function Home(props: any) {
     }
 
     if (props.reference) {
+      setBusy(true)
+      setShowVerifyingModal(true)
       fetchOrder()
     }
   }, [])
