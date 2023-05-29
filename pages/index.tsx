@@ -247,8 +247,7 @@ export default function Home(props: any) {
       const order = await getOrder(props.reference as string)
         .then(res => res.data.transaction)
 
-      console.log(order, 'order')
-      if (order.status === TRANSACTIONSTATUS.DEBITED) {
+      if (order.status !== TRANSACTIONSTATUS.DEBITING) {
         setPaymentVerified(true)
         handleCreditUserWallet(order.user_id)
       }
