@@ -1,4 +1,4 @@
-import { FIATCURRENCY, STABLES, TRANSACTIONKIND } from "./enums"
+import { FIATCURRENCY, STABLES, TRANSACTIONKIND, TRANSACTIONSTATUS } from "./enums"
 
 export type Order = {
   id?: string
@@ -7,6 +7,7 @@ export type Order = {
   fiat: FIATCURRENCY
   tokenAmount: number
   token: STABLES
+  status: TRANSACTIONSTATUS
   kind: TRANSACTIONKIND
   country: string
   fiatRate: number

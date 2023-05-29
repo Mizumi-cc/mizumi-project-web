@@ -234,7 +234,20 @@ export default function Home(props: any) {
       const order = await getOrder(props.reference as string)
         .then(res => res.data.transaction)
 
-      setActiveOrder(order)
+      setActiveOrder({
+        userId: order.user_id,
+        token: order.token,
+        tokenAmount: order.token_amount,
+        fiat: order.fiat,
+        fiatAmount: order.fiat_amount,
+        status: order.status,
+        kind: order.kind,
+        country: order.country,
+        tokenRate: order.token_rate,
+        fiatRate: order.fiat_rate,
+        payoutInfo: order.payout_info,
+        createdAt: order.created_at,
+      })
 
       if (order.status !== TRANSACTIONSTATUS.DEBITING) {
         setPaymentVerified(true)
@@ -254,7 +267,7 @@ export default function Home(props: any) {
 
   useEffect(() => {
     if(connected && showVerifyingModal && busy && activeOrder && paymentVerified) {
-      handleCreditUserWallet(activeOrder.userId)
+      handleCreditUserWallet(activeOrder.user_id)
     }
   }, [connected, showVerifyingModal, busy, activeOrder, paymentVerified])
 
