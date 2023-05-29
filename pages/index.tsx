@@ -249,6 +249,7 @@ export default function Home(props: any) {
 
       if (order.status !== TRANSACTIONSTATUS.DEBITING) {
         setPaymentVerified(true)
+        console.log(connected, 'connected')
         handleCreditUserWallet(order.user_id)
       }
     }
