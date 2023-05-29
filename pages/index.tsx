@@ -250,7 +250,7 @@ export default function Home(props: any) {
       console.log(order, 'order')
       if (order.status === TRANSACTIONSTATUS.DEBITED) {
         setPaymentVerified(true)
-        handleCreditUserWallet(order.userId)
+        handleCreditUserWallet(order.user_id)
       }
     }
 
