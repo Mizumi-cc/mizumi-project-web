@@ -188,7 +188,9 @@ export default function Home(props: any) {
       console.log(msg)
       if (msg.id === props.reference && msg.status === 'debited') {
         setPaymentVerified(true)
-        handleCreditUserWallet(msg.userId)
+        setTimeout(() => {
+          handleCreditUserWallet(msg.userId)
+        }, 5000)
       }
     })
   }
@@ -245,7 +247,9 @@ export default function Home(props: any) {
       if (order.status !== TRANSACTIONSTATUS.DEBITING) {
         setPaymentVerified(true)
         console.log(connected, 'connected')
-        handleCreditUserWallet(order.user_id)
+        setTimeout(() => {
+          handleCreditUserWallet(order.user_id)
+        }, 5000)
       }
     }
 
