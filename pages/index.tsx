@@ -183,9 +183,6 @@ export default function Home(props: any) {
       console.log(msg)
       if (msg.id === props.reference && msg.status === 'debited') {
         setPaymentVerified(true)
-        setTimeout(() => {
-          handleCreditUserWallet(msg.userId)
-        }, 5000)
       }
     })
   }
@@ -241,10 +238,6 @@ export default function Home(props: any) {
 
       if (order.status !== TRANSACTIONSTATUS.DEBITING) {
         setPaymentVerified(true)
-        console.log(connected, 'connected')
-        setTimeout(() => {
-          handleCreditUserWallet(order.user_id)
-        }, 5000)
       }
     }
 
@@ -258,6 +251,12 @@ export default function Home(props: any) {
   useEffect(() => {
     initializeSocket()
   }, [])
+
+  useEffect(() => {
+    if(connected && showVerifyingModal && busy && activeOrder && paymentVerified) {
+      handleCreditUserWallet(activeOrder.userId)
+    }
+  }, [connected, showVerifyingModal, busy, activeOrder, paymentVerified])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
