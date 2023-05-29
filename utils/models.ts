@@ -7,7 +7,7 @@ export type Order = {
   fiat: FIATCURRENCY
   tokenAmount: number
   token: STABLES
-  status: TRANSACTIONSTATUS
+  status?: TRANSACTIONSTATUS
   kind: TRANSACTIONKIND
   country: string
   fiatRate: number
