@@ -113,3 +113,19 @@ a {
   font-weight: 400;
   font-style: italic;
 }
+
+@layer base {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
+
+.mizumi-text {
+  background: -webkit-linear-gradient(#60a5fa, #eab308);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
