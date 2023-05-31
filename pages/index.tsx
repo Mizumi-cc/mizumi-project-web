@@ -53,7 +53,8 @@ export default function Home() {
           Mizumi is a non-custodial exchange that enables users to swap stable coins (USDC, USDT) for national African currencies directly and securely.
           It leverages liquidity pools to facilitate these swaps and bridge the gap between traditional finance and digital assets
         </p>
-        <input 
+        <input
+          type="email"
           value={email}
           placeholder="Email address"
           onChange={e => setEmail(e.target.value)}
