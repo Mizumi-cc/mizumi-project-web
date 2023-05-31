@@ -23,6 +23,7 @@ const RegisterModal: FunctionComponent<Props> = ({
   const [password, setPassword] = useState<string>('')
   const [confirmPassword, setConfirmPassword] = useState<string>('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [authError, setAuthError] = useState<string>('')
 
   const handleClose = () => {
     clearForm()
@@ -231,7 +232,7 @@ const RegisterModal: FunctionComponent<Props> = ({
                     </div>
                   </button>
                 </div>
-                <div className="flex flex-row items-center justify-between px-6 mt-2 mb-6">
+                <div className={`flex flex-row items-center justify-between px-6 mt-2 ${authError.length > 0 ? '' : 'mb-6'}`}>
                   <p className="text-white text-sm font-medium">Already have an account?</p>
                   <button
                     onClick={openLoginModal}
@@ -240,6 +241,11 @@ const RegisterModal: FunctionComponent<Props> = ({
                     Login
                   </button>
                 </div>
+                {authError.length > 0 && (
+                  <div>
+                    <p className="text-center text-red-500">{authError}</p>
+                  </div>
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>
