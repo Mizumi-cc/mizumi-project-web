@@ -7,9 +7,10 @@ interface HeaderProps {
   logoMode?: 'dark' | 'light'
   showRegisterModal?: () => void
   showLoginModal?: () => void
+  showAuthButtons?: boolean
 }
 
-const Header = ({ logoMode, showRegisterModal, showLoginModal }: HeaderProps) => {
+const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons = true }: HeaderProps) => {
   const { user, token, reset } = useAuthStore()
 
   const onLogout = async () => {
@@ -33,35 +34,37 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal }: HeaderProps) =>
         href="/"
       />
 
-      <div className="flex flex-row items-center space-x-3">
-        {!user && (
-          <div className="flex flex-row items-center space-x-4">
-            <button
-              onClick={showLoginModal}
-              className="bg-black text-white font-medium rounded-md px-6 py-[10px]"
-            >
-              Login
-            </button>
-            <button
-              onClick={showRegisterModal}
-              className="bg-white text-black font-medium rounded-md px-6 py-[10px]"
-            >
-              Register
-            </button>
-          </div>
-        )}
-        {user && (
-          <div className="flex flex-row items-center space-x-3">
-            <WalletMultiButton />
-            <button
-              onClick={onLogout}
-              className="bg-black text-white font-medium rounded-md px-6 py-[10px]"
-            >
-              Logout
-            </button>
-          </div>
-        )}
-      </div>
+      {showAuthButtons && (
+        <div className="flex flex-row items-center space-x-3">
+          {!user && (
+            <div className="flex flex-row items-center space-x-4">
+              <button
+                onClick={showLoginModal}
+                className="bg-black text-white font-medium rounded-md px-6 py-[10px]"
+              >
+                Login
+              </button>
+              <button
+                onClick={showRegisterModal}
+                className="bg-white text-black font-medium rounded-md px-6 py-[10px]"
+              >
+                Register
+              </button>
+            </div>
+          )}
+          {user && (
+            <div className="flex flex-row items-center space-x-3">
+              <WalletMultiButton />
+              <button
+                onClick={onLogout}
+                className="bg-black text-white font-medium rounded-md px-6 py-[10px]"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   )
 }

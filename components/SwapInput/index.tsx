@@ -19,7 +19,7 @@ const SwapInput = ({
   return (
     <>
       <p className="font-bold text-white text-sm">{label}</p>
-      <div className="flex flex-row items-center justify-between rounded-xl bg-black p-2.5">
+      <div className="flex flex-row items-center justify-between rounded-xl bg-[#060606] p-2.5">
         <CurrencyListbox 
           selectedCurrency={selectedCurrency}
           currencies={currencies}

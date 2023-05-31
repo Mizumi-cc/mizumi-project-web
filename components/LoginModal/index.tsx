@@ -21,24 +21,30 @@ const LoginModal: FunctionComponent<Props> = ({
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [authError, setAuthError] = useState<string>('')
 
   const handleSubmit = async() => {
     checkPassword()
     checkUsernameOrEmail()
 
-    console.log(errors)
-    if (Object.keys(errors).length > 0) {
+    if (errors.email?.length > 0 || errors.username?.length > 0 || errors.password?.length > 0) {
       addAlert({
         type: 'info',
         text: 'Please fill the form correctly'
       })
       return
     }
+    setAuthError('')
     setBusy(true)
     const form = generateForm()
     const response = await login(form)
       .catch((err) => {
         setBusy(false)
+        if(err.response.data === 'Invalid credentials') {
+          setAuthError('Invalid credentials')
+        } else {
+          setAuthError('Something went wrong')
+        }
       })
     if (response) {
       clearForm()
@@ -58,6 +64,7 @@ const LoginModal: FunctionComponent<Props> = ({
 
   const handleClose = () => {
     clearForm()
+    setAuthError('')
     onClose()
   }
 
@@ -179,6 +186,7 @@ const LoginModal: FunctionComponent<Props> = ({
                     placeholder="xxxxxxxxxxxx"
                     value={password}
                     onBlur={checkPassword}
+                    errors={errors}
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </form>
@@ -194,7 +202,7 @@ const LoginModal: FunctionComponent<Props> = ({
                     </div>
                   </button>
                 </div>
-                <div className="flex flex-row items-center justify-between px-6 mt-2 mb-6">
+                <div className={`flex flex-row items-center justify-between px-6 mt-2 ${authError.length > 0 ? '' : 'mb-6'}`}>
                   <p className="text-white text-sm font-medium">New here?</p>
                   <button
                     onClick={openRegisterModal}
@@ -203,6 +211,11 @@ const LoginModal: FunctionComponent<Props> = ({
                     Create account
                   </button>
                 </div>
+                {authError.length > 0 && (
+                  <div>
+                    <p className="text-center text-red-500">{authError}</p>
+                  </div>
+                )}
               </Dialog.Panel>
             </Transition.Child>
           </div>
