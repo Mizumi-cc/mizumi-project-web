@@ -39,18 +39,18 @@ export default function Home() {
 
   return (
     <main
-      className="h-screen flex flex-col bg-stone-800"
+      className="lg:h-screen min-h-screen flex flex-col bg-stone-800 lg:px-0 px-4"
     >
       <HTMLHead />
       <Header showAuthButtons={false} />
       <div
-        className="flex justify-center items-center flex-col h-full mb-40"
+        className="flex justify-center items-center flex-col lg:h-full my-auto xl:mb-40"
       >
-        <h1 className="font-bold text-white text-5xl w-[800px] text-center leading-snug mb-6">
+        <h1 className="font-bold text-white xl:text-5xl xl:w-[800px] md:w-[550px] text-3xl text-center leading-snug mb-6">
           Empowering Cross-Border Transactions in Africa
         </h1>
-        <p className="text-white w-[600px] text-center tracking-wider mb-20">
-          Mizumi is a decentralized exchange platform enables users to swap stable coins (USDC, USDT) for national African currencies directly and securely.
+        <p className="text-white xl:w-[600px] md:w-[500px] text-center lg:tracking-wider tracking-wide mb-20">
+          Mizumi is a non-custodial exchange that enables users to swap stable coins (USDC, USDT) for national African currencies directly and securely.
           It leverages liquidity pools to facilitate these swaps and bridge the gap between traditional finance and digital assets
         </p>
         <input 
