@@ -35,7 +35,7 @@ const RegisterModal: FunctionComponent<Props> = ({
     checkEmail()
     checkPassword()
 
-    if (Object.keys(errors).length > 0) {
+    if (errors.email?.length > 0 || errors.username?.length > 0 || errors.password?.length > 0 || errors.confirmPassword?.length > 0) {
       addAlert({
         type: 'info',
         text: 'Please fill the form correctly'
