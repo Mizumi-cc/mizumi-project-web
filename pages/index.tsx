@@ -13,13 +13,13 @@ import type { SwapData } from "../components/SwapBox"
 import RegisterModal from "../components/RegisterModal"
 import LoginModal from "../components/LoginModal"
 import RatesBox from "../components/RatesBox"
-import PaymentStatusModal from "../components/PaymentStatusModal"
 import SuccessModal from "../components/SuccessModal"
 import VeryfyingPaymentModal from "../components/VeryfyingPaymentModal"
 
 // stores
 import useAuthStore from "../stores/auth"
 import useUserOrdersStore from "../stores/userOrders"
+import useAlertStore from "../stores/alerts"
 
 // services
 import { getGHSRates } from "../services/rates"
@@ -36,20 +36,18 @@ export default function Swap(props: any) {
   const { showLoginModal, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
   const { orders } = useUserOrdersStore()
-  const { connected, publicKey, sendTransaction, connect } = useWallet()
+  const { connected, publicKey, sendTransaction } = useWallet()
   const { connection } = useConnection()
   const { setVisible } = useWalletModal()
+  const { addAlert } = useAlertStore()
 
   const [busy, setBusy] = useState<boolean>(false)
-  const [swapData, setSwapData] = useState<SwapData | null>(null)
   const [ghsRate, setGhsRate] = useState<number>(0)
   const [usdcRate, setUsdcRate] = useState<number>(0)
   const [usdtRate, setUsdtRate] = useState<number>(0)
-  const [paymentStatus, setPaymentStatus] = useState<string>('')
-  const [showPaymentStatusModal, setShowPaymentStatusModal] = useState<boolean>(false)
   const [activeOrder, setActiveOrder] = useState<Order | null>(null)
   const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false)
-  const [credited, setCredited] = useState<boolean>(false)
+  const [crediting, setCrediting] = useState<boolean>(false)
   const [showVerifyingModal, setShowVerifyingModal] = useState<boolean>(false)
   const [paymentVerified, setPaymentVerified] = useState<boolean>(false)
 
@@ -59,7 +57,6 @@ export default function Swap(props: any) {
       return
     }
     setBusy(true)
-    setSwapData(data)
     const { txId, dbTransaction } = await handleCreateOrder(data)
     await initiateDebit(
       { txId: dbTransaction.id, userId: user!.id, blockchainTxId: txId! },
@@ -86,7 +83,7 @@ export default function Swap(props: any) {
   }
 
   const handleCreditUserWallet = async (userId: string) => {
-    setCredited(true)
+    setCrediting(true)
     const token = sessionStorage.getItem('token')
 
     const serializedTransaction = await initiateCredit(userId, props.reference, token!)
@@ -271,6 +268,18 @@ export default function Swap(props: any) {
       handleCreditUserWallet(activeOrder.userId)
     }
   }, [connected, showVerifyingModal, busy, activeOrder, paymentVerified])
+
+  useEffect(() => {
+    if (paymentVerified) {
+      setTimeout(() => {
+        if (!connected && !crediting) {
+          addAlert({ type: 'info',  text: 'Please connect your wallet to receive approval prompt'})
+          setVisible(true)
+        }
+      }, 10000)
+    }
+    
+  }, [connected, crediting, paymentVerified])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
