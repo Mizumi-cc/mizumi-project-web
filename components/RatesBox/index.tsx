@@ -36,7 +36,7 @@ const RatesBox: FunctionComponent<RatesBoxProps> = ({
         
         <div className="stat">
           <div className="stat-title text-white">Ghana Cedi</div>
-          <div className="countdown font-mono text-3xl text-yellow-500">${(ghsRate / 100).toFixed(2)}</div>
+          <div className="countdown font-mono text-3xl text-yellow-500">₵{(ghsRate).toPrecision(4)}</div>
           <div className="stat-desc"></div>
         </div>
       </div>
