@@ -269,17 +269,6 @@ export default function Swap(props: any) {
     }
   }, [connected, showVerifyingModal, busy, activeOrder, paymentVerified])
 
-  useEffect(() => {
-    if (paymentVerified) {
-      setTimeout(() => {
-        if (!connected && !crediting) {
-          addAlert({ type: 'info',  text: 'Please connect your wallet to receive approval prompt'})
-          setVisible(true)
-        }
-      }, 10000)
-    }
-    
-  }, [connected, crediting, paymentVerified])
 
   return (
     <main className='min-h-screen flex flex-col bg-stone-800'>
