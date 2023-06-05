@@ -23,7 +23,6 @@ const RegisterModal: FunctionComponent<Props> = ({
   const [password, setPassword] = useState<string>('')
   const [confirmPassword, setConfirmPassword] = useState<string>('')
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [authError, setAuthError] = useState<string>('')
 
   const handleClose = () => {
     clearForm()
@@ -50,8 +49,9 @@ const RegisterModal: FunctionComponent<Props> = ({
     }
     const response = await register(form)
       .catch((err) => {
+        console.log(err)
         setBusy(false)
-        setErrors((prevState) => ({...prevState, register: err.response.data.message}))
+        setErrors((prevState) => ({...prevState, register: err.response.data}))
       })
     if (response) {
       clearForm()
@@ -232,18 +232,19 @@ const RegisterModal: FunctionComponent<Props> = ({
                     </div>
                   </button>
                 </div>
-                <div className={`flex flex-row items-center justify-between px-6 mt-2 ${authError.length > 0 ? '' : 'mb-6'}`}>
-                  <p className="text-white text-sm font-medium">Already have an account?</p>
-                  <button
-                    onClick={openLoginModal}
-                    className="text-white text-sm font-medium"
-                  >
-                    Login
-                  </button>
-                </div>
-                {authError.length > 0 && (
-                  <div>
-                    <p className="text-center text-red-500">{authError}</p>
+                {errors.register && errors.register.length > 0 ? (
+                  <div className="mt-2">
+                    <p className="text-center text-red-500">{errors['register']}</p>
+                  </div>
+                ) : (
+                  <div className={`flex flex-row items-center justify-between px-6 mt-2 ${errors.register && errors.register.length > 0 ? '' : 'mb-6'}`}>
+                    <p className="text-white text-sm font-medium">Already have an account?</p>
+                    <button
+                      onClick={openLoginModal}
+                      className="text-white text-sm font-medium"
+                    >
+                      Login
+                    </button>
                   </div>
                 )}
               </Dialog.Panel>

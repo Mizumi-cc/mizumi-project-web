@@ -202,18 +202,19 @@ const LoginModal: FunctionComponent<Props> = ({
                     </div>
                   </button>
                 </div>
-                <div className={`flex flex-row items-center justify-between px-6 mt-2 ${authError.length > 0 ? '' : 'mb-6'}`}>
-                  <p className="text-white text-sm font-medium">New here?</p>
-                  <button
-                    onClick={openRegisterModal}
-                    className="text-white text-sm font-medium"
-                  >
-                    Create account
-                  </button>
-                </div>
-                {authError.length > 0 && (
-                  <div>
+                {authError.length > 0 ? (
+                  <div className="mt-2">
                     <p className="text-center text-red-500">{authError}</p>
+                  </div>
+                ) : (
+                  <div className={`flex flex-row items-center justify-between px-6 mt-2 ${authError.length > 0 ? '' : 'mb-6'}`}>
+                    <p className="text-white text-sm font-medium">New here?</p>
+                    <button
+                      onClick={openRegisterModal}
+                      className="text-white text-sm font-medium"
+                    >
+                      Create account
+                    </button>
                   </div>
                 )}
               </Dialog.Panel>
