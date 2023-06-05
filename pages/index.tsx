@@ -198,7 +198,7 @@ export default function Swap(props: any) {
 
   useEffect(() => {
     async function storeUserWallet() {
-      if (connected && publicKey && user) {
+      if (connected && publicKey && user && !user?.walletAddress) {
         await saveWalletAddress(token!, publicKey!.toBase58())
         handleCreateProgramUserAccount()
       }
