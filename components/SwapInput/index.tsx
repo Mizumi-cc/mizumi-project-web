@@ -19,13 +19,13 @@ const SwapInput = ({
   return (
     <>
       <p className="font-bold text-white text-sm">{label}</p>
-      <div className="flex flex-row items-center justify-between rounded-xl bg-[#060606] p-2.5">
+      <div className="flex flex-row items-center justify-between rounded-xl bg-[#060606] xl:p-2.5 p-2">
         <CurrencyListbox 
           selectedCurrency={selectedCurrency}
           currencies={currencies}
           onChange={onCurrencyChange}
         />
-        <div className="flex flex-col items-end">
+        <div className="flex flex-col items-end lg:pr-0 pr-2">
           <input 
             value={value === 0 ? '' : value}
             onChange={e => onValueChange(parseFloat(e.target.value))}

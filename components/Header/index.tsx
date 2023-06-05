@@ -23,7 +23,7 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
 
   return (
     <header
-      className="flex flexrow items-center justify-between w-full bg-transparent py-4 px-8"
+      className="flex flex-row items-center justify-between w-full bg-transparent py-4 lg:px-8 px-0"
     >
       <Logo 
         image={{
@@ -35,18 +35,18 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
       />
 
       {showAuthButtons && (
-        <div className="flex flex-row items-center space-x-3">
+        <div className="flex flex-row items-center lg:space-x-3 space-x-2">
           {!user && (
             <div className="flex flex-row items-center space-x-4">
               <button
                 onClick={showLoginModal}
-                className="bg-black text-white font-medium rounded-md px-6 py-[10px]"
+                className="bg-black text-white font-medium rounded-md lg:text-base text-sm  lg:px-6 px-4 lg:py-[10px] py-[6px]"
               >
                 Login
               </button>
               <button
                 onClick={showRegisterModal}
-                className="bg-white text-black font-medium rounded-md px-6 py-[10px]"
+                className="bg-white text-black font-medium rounded-md lg:px-6 px-4 lg:py-[10px] py-[6px] lg:text-base text-sm"
               >
                 Register
               </button>

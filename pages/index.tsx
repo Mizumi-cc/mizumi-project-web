@@ -271,13 +271,13 @@ export default function Swap(props: any) {
 
 
   return (
-    <main className='min-h-screen flex flex-col bg-stone-800'>
+    <main className='min-h-screen flex flex-col bg-stone-800 lg:px-0 px-4 lg:pb-0 pb-12'>
       <HTMLHead />
       <Header 
         showRegisterModal={() => setShowRegisterModal(true)}
         showLoginModal={() => setShowLoginModal(true)}
       />
-      <div className="justify-center items-center flex flex-col h-full pt-32 space-y-10">
+      <div className="justify-center items-center flex flex-col h-full lg:pt-32 pt-14 space-y-10">
         <SwapBox 
           busy={busy}
           rates={{

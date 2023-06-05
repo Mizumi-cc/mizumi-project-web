@@ -208,8 +208,8 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   }, [creditAddress])
 
   return ( 
-    <div className="flex-col space-y-4">
-      <div className="flex-col space-y-3 px-6 pt-4 pb-10 w-[448px] bg-stone-700 rounded-xl shadow-md">
+    <div className="flex-col space-y-4 w-full">
+      <div className="flex-col space-y-3 lg:px-6 px-4 pt-4 lg:pb-10 pb-4 md:w-[448px] w-full bg-stone-700 rounded-xl shadow-md">
         <SwapInput 
           currencies={firstCurrencyList}
           selectedCurrency={debitCurrency!}
@@ -260,7 +260,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             />
           )}
           {selectedPayoutMethod === 'momo' && (
-            <MomoInput 
+            <MomoInput
               phone={phone}
               onPhoneChange={setPhone}
               name={momoAccountName}
@@ -281,7 +281,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
       <button
         onClick={handleSubmit}
         disabled={busy}
-        className={`w-[448px] bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
+        className={`md:w-[448px] w-full bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
       >
         <div className="w-full h-full bg-black rounded-lg flex justify-center items-center">
           {busy ? <Loading /> : <p className="text-white font-bold text-md">{!user ? 'Login' : connected ? 'Swap' : 'Connect wallet'}</p>}

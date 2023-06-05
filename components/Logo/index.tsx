@@ -21,8 +21,8 @@ const Logo = ({
       <Image 
         src={mode === "light" ? image!.black : image!.white}
         alt="Logo"
-        width={140}
-        height={140}
+        width={100}
+        height={100}
         sizes={'100vw'}
         style={{objectFit: 'contain', height: 'auto'}}
         className="cursor-pointer transition ease-in-out hover:opacity-100"
