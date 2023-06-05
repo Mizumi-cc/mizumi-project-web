@@ -208,7 +208,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   }, [creditAddress])
 
   return ( 
-    <div className="flex-col space-y-4 w-full">
+    <div className="flex-col space-y-4 w-full md:w-fit">
       <div className="flex-col space-y-3 lg:px-6 px-4 pt-4 lg:pb-10 pb-4 md:w-[448px] w-full bg-stone-700 rounded-xl shadow-md">
         <SwapInput 
           currencies={firstCurrencyList}
