@@ -170,8 +170,8 @@ const RegisterModal: FunctionComponent<Props> = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className="w-fit transform overflow-hidden rounded-xl bg-stone-700 py-4 text-left align-middle shadow-xl transition-all min-w-[400px]"
-              >
+                className="w-fit transform overflow-hidden rounded-xl bg-stone-700 py-4 text-left align-middle shadow-xl transition-all lg:min-w-[400px] min-w-[340px]"
+                >
                 <Dialog.Title
                   as="h3"
                   className="text-lg xl:text-2xl font-medium leading-6 text-white text-center"
