@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from 'react'
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react'
-import { SolflareWalletAdapter } from '@solana/wallet-adapter-wallets'
+import { SolflareWalletAdapter, BackpackWalletAdapter } from '@solana/wallet-adapter-wallets'
 import {
     WalletModalProvider,
 } from '@solana/wallet-adapter-react-ui'
@@ -35,6 +35,7 @@ function MyApp({ Component, pageProps }: AppProps) {
   const wallets = useMemo(
     () => [
       new SolflareWalletAdapter(),
+      new BackpackWalletAdapter()
     ],
     []
   )
