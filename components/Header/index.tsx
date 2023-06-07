@@ -25,7 +25,7 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
 
   return (
     <header
-      className="flex flex-row items-center justify-between w-full bg-transparent py-4 lg:px-8 px-4 fixed top-0 left-0 right-0"
+      className="flex flex-row items-center justify-between w-full bg-black bg-opacity-5 backdrop-blur-sm py-2 lg:px-8 px-4 fixed top-0 left-0 right-0"
     >
       <Logo 
         image={{
