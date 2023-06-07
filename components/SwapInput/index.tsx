@@ -24,7 +24,6 @@ const SwapInput = ({
   const { connection } = useConnection()
   const [tokenBalance, setTokenBalance] = useState(0)
 
-  console.log(selectedCurrency)
   return (
     <>
       <div className="flex flex-row items-center justify-between">
