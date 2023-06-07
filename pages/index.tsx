@@ -277,7 +277,7 @@ export default function Swap(props: any) {
         showRegisterModal={() => setShowRegisterModal(true)}
         showLoginModal={() => setShowLoginModal(true)}
       />
-      <div className="justify-center items-center flex flex-col h-full lg:pt-32 pt-14 space-y-10">
+      <div className="justify-center items-center flex flex-col h-full lg:pt-32 pt-28 space-y-10">
         <SwapBox 
           busy={busy}
           rates={{
