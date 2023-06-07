@@ -13,16 +13,23 @@ interface SwapInputProps {
   value: number
   onValueChange: (value: number) => void
   dollarValue: number
+  tokenBalance: number
+  updateTokenBalance: (balance: number) => void
 }
 
 const SwapInput = ({
-  currencies, selectedCurrency, 
-  onCurrencyChange, value, onValueChange, 
-  dollarValue, label
+  currencies, 
+  selectedCurrency, 
+  onCurrencyChange, 
+  value, 
+  onValueChange, 
+  dollarValue, 
+  label,
+  tokenBalance,
+  updateTokenBalance
 }: SwapInputProps) => {
   const { publicKey } = useWallet()
   const { connection } = useConnection()
-  const [tokenBalance, setTokenBalance] = useState(0)
 
   return (
     <>
@@ -36,7 +43,7 @@ const SwapInput = ({
               walletAddress={publicKey!}
               symbol={selectedCurrency.symbol}
               balance={tokenBalance}
-              updateBalance={setTokenBalance}
+              updateBalance={updateTokenBalance}
             />
             <button
               onClick={() => onValueChange(tokenBalance / 2)}
