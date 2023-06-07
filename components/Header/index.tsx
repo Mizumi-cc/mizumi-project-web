@@ -75,7 +75,8 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
                   Logout
                 </button>
               </div>
-              <div className="md:hidden block">
+              <div className="md:hidden flex flex-row items-center">
+                <WalletMultiButton />
                 <ShowMoreMenu 
                   options={[
                     { title: 'Logout', onClick: onLogout }

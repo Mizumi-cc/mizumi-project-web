@@ -63,6 +63,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   const [phone, setPhone] = useState<string>('')
   const [momoAccountName, setMomoAccountName] = useState<string>('')
   const [momoNetwork, setMomoNetwork] = useState<string>('MTN')
+  const [tokenBalance, setTokenBalance] = useState<number>(0)
 
   const firstCurrencyList = useMemo(() => {
     if (creditCurrency.symbol === 'GHS')  {
@@ -198,6 +199,13 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
     }
   }, [debitCurrency, inputValue, rates])
 
+  const insufficientBalance = useMemo(() => {
+    if (debitCurrency.symbol !== "GHS" && inputValue > tokenBalance) {
+      return true
+    }
+    return false
+  }, [debitCurrency, tokenBalance, inputValue])
+
   useEffect(() => {
     try {
       new PublicKey(creditAddress)
@@ -218,6 +226,8 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
           onValueChange={setInputValue}
           dollarValue={dollarValue}
           label={'You pay'}
+          tokenBalance={tokenBalance}
+          updateTokenBalance={setTokenBalance}
         />
         <div className="flex justify-center items-center">
           <button
@@ -280,11 +290,17 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
       </div>
       <button
         onClick={handleSubmit}
-        disabled={busy}
+        disabled={busy || insufficientBalance}
         className={`md:w-[448px] w-full bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
       >
         <div className="w-full h-full bg-black rounded-lg flex justify-center items-center">
-          {busy ? <Loading /> : <p className="text-white font-bold text-md">{!user ? 'Login' : connected ? 'Swap' : 'Connect wallet'}</p>}
+          {busy ? 
+            <Loading /> : 
+            <p 
+              className={`text-white font-bold text-md ${insufficientBalance && 'text-opacity-50'}`}
+            >
+              {!user ? 'Login' : !connected ? 'Connect wallet' : insufficientBalance ? `Insufficient ${debitCurrency.symbol}` : 'Swap'}
+            </p>}
         </div>
       </button>
     </div>

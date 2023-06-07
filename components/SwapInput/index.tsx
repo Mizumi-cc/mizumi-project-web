@@ -1,5 +1,9 @@
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import CurrencyListbox from "../CurrencyListbox"
 import type { Currency } from "../CurrencyListbox"
+import TokenBalance from "../TokenBalance"
+import { PublicKey } from "@solana/web3.js"
+import { useState } from "react"
 
 interface SwapInputProps {
   label: string
@@ -9,16 +13,53 @@ interface SwapInputProps {
   value: number
   onValueChange: (value: number) => void
   dollarValue: number
+  tokenBalance: number
+  updateTokenBalance: (balance: number) => void
 }
 
 const SwapInput = ({
-  currencies, selectedCurrency, 
-  onCurrencyChange, value, onValueChange, 
-  dollarValue, label
+  currencies, 
+  selectedCurrency, 
+  onCurrencyChange, 
+  value, 
+  onValueChange, 
+  dollarValue, 
+  label,
+  tokenBalance,
+  updateTokenBalance
 }: SwapInputProps) => {
+  const { publicKey } = useWallet()
+  const { connection } = useConnection()
+
   return (
     <>
-      <p className="font-bold text-white text-sm">{label}</p>
+      <div className="flex flex-row items-center justify-between">
+        <p className="font-bold text-white text-sm">{label}</p>
+        {publicKey && selectedCurrency.symbol !== 'GHS' && (
+          <div className="flex flex-row items-center space-x-2">
+            <TokenBalance 
+              connection={connection}
+              mintAddress={new PublicKey(selectedCurrency.mintAddress!)}
+              walletAddress={publicKey!}
+              symbol={selectedCurrency.symbol}
+              balance={tokenBalance}
+              updateBalance={updateTokenBalance}
+            />
+            <button
+              onClick={() => onValueChange(tokenBalance / 2)}
+              className="uppercase text-white rounded-2xl px-[8px] py-[2px] border border-gray-500 text-[10px] font-semibold bg-stone-800"
+            >
+              half
+            </button>
+            <button
+              onClick={() => onValueChange(tokenBalance)}
+              className="uppercase text-white rounded-2xl px-[8px] py-[2px] border border-gray-500 text-[10px] font-semibold bg-stone-800"
+            >
+              max
+            </button>
+          </div>
+        )}
+      </div>
       <div className="flex flex-row items-center justify-between rounded-xl bg-[#060606] xl:p-2.5 p-2">
         <CurrencyListbox 
           selectedCurrency={selectedCurrency}
