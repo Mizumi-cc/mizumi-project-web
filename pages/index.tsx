@@ -29,10 +29,12 @@ import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit,
 // utils
 import type { Order } from "../utils/models"
 import { STABLES, TRANSACTIONKIND, TRANSACTIONSTATUS } from "../utils/enums"
+import { useRouter } from "next/router"
 
 let socket
 
-export default function Swap(props: any) {
+export default function Swap() {
+  const router = useRouter()
   const { showLoginModal, token, user,
     showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
   const { orders } = useUserOrdersStore()
@@ -86,7 +88,7 @@ export default function Swap(props: any) {
     setCrediting(true)
     const token = sessionStorage.getItem('token')
 
-    const serializedTransaction = await initiateCredit(userId, props.reference, token!)
+    const serializedTransaction = await initiateCredit(userId, router.query.reference as string, token!)
       .then((res) => res.data.serializedTransaction)
     const hash = await signAndSendTransaciton(serializedTransaction)
     const blockhash = await connection.getLatestBlockhash()
@@ -98,7 +100,7 @@ export default function Swap(props: any) {
       console.log(err)
       setBusy(false)
     })
-    handleCompleteOrder(props.reference)
+    handleCompleteOrder(router.query.reference as string)
   }
 
   const confirmTxAndCreditFiat = async (hash: string, txId: string) => {
@@ -179,7 +181,7 @@ export default function Swap(props: any) {
     })
     socket.on('order', (msg) => {
       console.log(msg)
-      if (msg.id === props.reference && msg.status === 'debited') {
+      if (msg.id === router.query.reference && msg.status === 'debited') {
         setPaymentVerified(true)
       }
     })
@@ -229,7 +231,7 @@ export default function Swap(props: any) {
 
   useEffect(() => {
     async function fetchOrder() {
-      const order = await getOrder(props.reference as string)
+      const order = await getOrder(router.query.reference as string)
         .then(res => res.data.transaction)
 
       setActiveOrder({
@@ -252,7 +254,7 @@ export default function Swap(props: any) {
       }
     }
 
-    if (props.reference) {
+    if (router.query.reference) {
       setBusy(true)
       setShowVerifyingModal(true)
       fetchOrder()
@@ -293,12 +295,6 @@ export default function Swap(props: any) {
           usdtRate={usdtRate}
         />
       </div>
-      {/* <PaymentStatusModal
-        order={activeOrder}
-        isOpen={showPaymentStatusModal}
-        onClose={() => setShowPaymentStatusModal(false)}
-        status={paymentStatus}
-      /> */}
       <RegisterModal 
         isOpen={showRegisterModal}
         onClose={() => setShowRegisterModal(false)}
@@ -318,14 +314,4 @@ export default function Swap(props: any) {
       />
     </main>
   )
-}
-
-export async function getServerSideProps({ query }: { query: any}) {
-  const { reference } = query
-
-  return {
-    props: {
-      reference: reference || null
-    }
-  }
 }
