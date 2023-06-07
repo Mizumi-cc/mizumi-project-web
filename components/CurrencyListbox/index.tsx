@@ -7,6 +7,7 @@ export interface Currency {
   name: string
   symbol: string
   image: string
+  mintAddress?: string
 }
 
 interface CurrencyMenuProps {

@@ -1,5 +1,9 @@
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
 import CurrencyListbox from "../CurrencyListbox"
 import type { Currency } from "../CurrencyListbox"
+import TokenBalance from "../TokenBalance"
+import { PublicKey } from "@solana/web3.js"
+import { useState } from "react"
 
 interface SwapInputProps {
   label: string
@@ -16,9 +20,40 @@ const SwapInput = ({
   onCurrencyChange, value, onValueChange, 
   dollarValue, label
 }: SwapInputProps) => {
+  const { publicKey } = useWallet()
+  const { connection } = useConnection()
+  const [tokenBalance, setTokenBalance] = useState(0)
+
+  console.log(selectedCurrency)
   return (
     <>
-      <p className="font-bold text-white text-sm">{label}</p>
+      <div className="flex flex-row items-center justify-between">
+        <p className="font-bold text-white text-sm">{label}</p>
+        {publicKey && selectedCurrency.symbol !== 'GHS' && (
+          <div className="flex flex-row items-center space-x-2">
+            <TokenBalance 
+              connection={connection}
+              mintAddress={new PublicKey(selectedCurrency.mintAddress!)}
+              walletAddress={publicKey!}
+              symbol={selectedCurrency.symbol}
+              balance={tokenBalance}
+              updateBalance={setTokenBalance}
+            />
+            <button
+              onClick={() => onValueChange(tokenBalance / 2)}
+              className="uppercase text-white rounded-2xl px-[8px] py-[2px] border border-gray-500 text-[10px] font-semibold bg-stone-800"
+            >
+              half
+            </button>
+            <button
+              onClick={() => onValueChange(tokenBalance)}
+              className="uppercase text-white rounded-2xl px-[8px] py-[2px] border border-gray-500 text-[10px] font-semibold bg-stone-800"
+            >
+              max
+            </button>
+          </div>
+        )}
+      </div>
       <div className="flex flex-row items-center justify-between rounded-xl bg-[#060606] xl:p-2.5 p-2">
         <CurrencyListbox 
           selectedCurrency={selectedCurrency}
