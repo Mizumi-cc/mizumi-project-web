@@ -289,11 +289,15 @@ export default function Swap() {
           }}
           onSubmit={handleSwapOrConnectClick}
         />
-        <RatesBox 
-          usdcRate={usdcRate}
-          ghsRate={ghsRate}
-          usdtRate={usdtRate}
-        />
+        <div
+          className="lg:fixed lg:top-20 lg:left-8 lg:w-1/12 w-full"
+        >
+          <RatesBox 
+            usdcRate={usdcRate}
+            ghsRate={ghsRate}
+            usdtRate={usdtRate}
+          />
+        </div>
       </div>
       <RegisterModal 
         isOpen={showRegisterModal}
