@@ -1,9 +1,14 @@
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
+import { 
+  ArrowRightOnRectangleIcon, 
+  PencilSquareIcon,
+} from "@heroicons/react/20/solid"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 import Logo from "../Logo"
 import useAuthStore from "../../stores/auth"
-import { logout } from "../../services/auth"
+import AccountMenu from "../AccountMenu"
 import ShowMoreMenu from "../ShowMoreMenu"
+import useGlobalModalsStore from "../../stores/globalModals"
 
 interface HeaderProps {
   logoMode?: 'dark' | 'light'
@@ -13,15 +18,8 @@ interface HeaderProps {
 }
 
 const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons = true }: HeaderProps) => {
+  const { publicKey } = useWallet()
   const { user, token, reset } = useAuthStore()
-
-  const onLogout = async () => {
-    await logout(token!)
-      .then(() => {
-        reset()
-        sessionStorage.removeItem('token')
-      })
-  }
 
   return (
     <header
@@ -55,10 +53,10 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
                 </button>
               </div>
               <div className="md:hidden block">
-                <ShowMoreMenu 
+                <ShowMoreMenu
                   options={[
-                    { title: 'Login', onClick: showLoginModal! },
-                    { title: 'Register', onClick: showRegisterModal!}
+                    { title: 'Login', onClick: showLoginModal!, icon: <ArrowRightOnRectangleIcon className="w-5 lg:w-7 pr-2"/> },
+                    { title: 'Register', onClick: showRegisterModal!, icon: <PencilSquareIcon className="w-5 lg:w-7 pr-2"/>}
                   ]}
                 />
               </div>
@@ -66,22 +64,8 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
           )}
           {user && (
             <>
-              <div className="md:flex flex-row items-center space-x-3 hidden">
-                <WalletMultiButton />
-                <button
-                  onClick={onLogout}
-                  className="bg-black text-white font-medium rounded-md px-6 py-[10px]"
-                >
-                  Logout
-                </button>
-              </div>
-              <div className="md:hidden flex flex-row items-center">
-                <WalletMultiButton />
-                <ShowMoreMenu 
-                  options={[
-                    { title: 'Logout', onClick: onLogout }
-                  ]}
-                />
+              <div className="flex flex-row items-center">
+                <AccountMenu />
               </div>
             </>
           )}
