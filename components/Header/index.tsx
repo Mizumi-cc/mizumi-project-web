@@ -2,7 +2,6 @@ import {
   ArrowRightOnRectangleIcon, 
   PencilSquareIcon,
 } from "@heroicons/react/20/solid"
-import { useWallet } from "@solana/wallet-adapter-react"
 
 import Logo from "../Logo"
 import useAuthStore from "../../stores/auth"
@@ -12,14 +11,12 @@ import useGlobalModalsStore from "../../stores/globalModals"
 
 interface HeaderProps {
   logoMode?: 'dark' | 'light'
-  showRegisterModal?: () => void
-  showLoginModal?: () => void
   showAuthButtons?: boolean
 }
 
-const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons = true }: HeaderProps) => {
-  const { publicKey } = useWallet()
-  const { user, token, reset } = useAuthStore()
+const Header = ({ logoMode, showAuthButtons = true }: HeaderProps) => {
+  const { user } = useAuthStore()
+  const { toggleLoginModal, toggleRegisterModal } = useGlobalModalsStore()
 
   return (
     <header
@@ -40,13 +37,13 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
             <>
               <div className="md:flex flex-row items-center space-x-4 hidden">
                 <button
-                  onClick={showLoginModal}
+                  onClick={toggleLoginModal}
                   className="bg-black text-white font-medium rounded-md lg:text-base text-sm  lg:px-6 px-4 lg:py-[10px] py-[6px]"
                 >
                   Login
                 </button>
                 <button
-                  onClick={showRegisterModal}
+                  onClick={toggleRegisterModal}
                   className="bg-white text-black font-medium rounded-md lg:px-6 px-4 lg:py-[10px] py-[6px] lg:text-base text-sm"
                 >
                   Register
@@ -55,8 +52,8 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
               <div className="md:hidden block">
                 <ShowMoreMenu
                   options={[
-                    { title: 'Login', onClick: showLoginModal!, icon: <ArrowRightOnRectangleIcon className="w-5 lg:w-7 pr-2"/> },
-                    { title: 'Register', onClick: showRegisterModal!, icon: <PencilSquareIcon className="w-5 lg:w-7 pr-2"/>}
+                    { title: 'Login', onClick: toggleLoginModal, icon: <ArrowRightOnRectangleIcon className="w-5 lg:w-7 pr-2"/> },
+                    { title: 'Register', onClick: toggleRegisterModal, icon: <PencilSquareIcon className="w-5 lg:w-7 pr-2"/>}
                   ]}
                 />
               </div>

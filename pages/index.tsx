@@ -10,8 +10,6 @@ import HTMLHead from "../components/HTMLHead"
 import Header from "../components/Header"
 import SwapBox from "../components/SwapBox"
 import type { SwapData } from "../components/SwapBox"
-import RegisterModal from "../components/RegisterModal"
-import LoginModal from "../components/LoginModal"
 import RatesBox from "../components/RatesBox"
 import SuccessModal from "../components/SuccessModal"
 import VeryfyingPaymentModal from "../components/VeryfyingPaymentModal"
@@ -35,8 +33,7 @@ let socket
 
 export default function Swap() {
   const router = useRouter()
-  const { showLoginModal, token, user,
-    showRegisterModal, setShowLoginModal, setShowRegisterModal } = useAuthStore()
+  const { token, user } = useAuthStore()
   const { orders } = useUserOrdersStore()
   const { connected, publicKey, sendTransaction } = useWallet()
   const { connection } = useConnection()
@@ -275,10 +272,7 @@ export default function Swap() {
   return (
     <main className='min-h-screen flex flex-col bg-stone-800 lg:px-0 px-4 lg:pb-0 pb-12'>
       <HTMLHead />
-      <Header 
-        showRegisterModal={() => setShowRegisterModal(true)}
-        showLoginModal={() => setShowLoginModal(true)}
-      />
+      <Header />
       <div className="justify-center items-center flex flex-col h-full lg:pt-32 pt-28 space-y-10">
         <SwapBox 
           busy={busy}
@@ -298,15 +292,7 @@ export default function Swap() {
             usdtRate={usdtRate}
           />
         </div>
-      </div>
-      <RegisterModal 
-        isOpen={showRegisterModal}
-        onClose={() => setShowRegisterModal(false)}
-      />
-      <LoginModal 
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-      />
+      </div>     
       <SuccessModal 
         isOpen={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}

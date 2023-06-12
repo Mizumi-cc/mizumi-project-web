@@ -13,6 +13,7 @@ import { getUserOrders } from '../services/order'
 import Toast from '../components/Toast'
 import useAlertStore from '../stores/alerts'
 import { Analytics } from '@vercel/analytics/react';
+import GlobalModals from '../components/GlobalModals'
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 
@@ -88,6 +89,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
           <Analytics />
           <Toast messages={alerts} />
+          <GlobalModals />
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
