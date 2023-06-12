@@ -76,7 +76,7 @@ const SwapInput = ({
             type={'number'}
             placeholder={'0.00'}
           />
-          {(value !== 0 && !isNaN(dollarValue)) && <span className="text-gray-400 text-xs truncate w-[200px]">
+          {(value !== 0 && !isNaN(dollarValue)) && <span className="text-gray-400 text-xs truncate w-[200px] text-right">
             {`$${dollarValue.toLocaleString('en-US', { maximumFractionDigits: 2})}`}</span>
           }
         </div>
