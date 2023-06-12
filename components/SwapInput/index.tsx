@@ -60,22 +60,25 @@ const SwapInput = ({
           </div>
         )}
       </div>
-      <div className="flex flex-row items-center justify-between rounded-xl bg-[#060606] xl:p-2.5 p-2">
-        <CurrencyListbox 
-          selectedCurrency={selectedCurrency}
-          currencies={currencies}
-          onChange={onCurrencyChange}
-        />
-        <div className="flex flex-col items-end lg:pr-0 pr-2">
+      <div className="grid grid-cols-4 gap-2 rounded-xl bg-[#060606] xl:p-2.5 p-2">
+        <div className="col-span-1">
+          <CurrencyListbox 
+            selectedCurrency={selectedCurrency}
+            currencies={currencies}
+            onChange={onCurrencyChange}
+          />
+        </div>
+        <div className="flex flex-col items-end lg:pr-0 pr-2 col-span-3">
           <input 
             value={value === 0 ? '' : value}
             onChange={e => onValueChange(parseFloat(e.target.value))}
-            className="bg-transparent outline-none text-white text-right text-lg"
+            className="bg-transparent outline-none text-white text-right text-lg w-full"
             type={'number'}
             placeholder={'0.00'}
           />
-          {(value !== 0 && !isNaN(dollarValue)) && <span className="text-gray-400 text-xs">
-            {`$${dollarValue.toLocaleString('en-US', { maximumFractionDigits: 2})}`}</span>}
+          {(value !== 0 && !isNaN(dollarValue)) && <span className="text-gray-400 text-xs truncate w-[200px] text-right">
+            {`$${dollarValue.toLocaleString('en-US', { maximumFractionDigits: 2})}`}</span>
+          }
         </div>
       </div>
     </>

@@ -247,7 +247,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             selectedCurrency={creditCurrency!}
             onChange={setCreditCurrency}
           />
-          <p className="text-white mr-2 text-lg">
+          <p className="text-white mr-2 text-lg truncate">
             {payoutAmount.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2})}
           </p>
         </div>
