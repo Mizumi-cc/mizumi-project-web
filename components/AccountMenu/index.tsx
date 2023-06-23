@@ -45,10 +45,10 @@ const AccountMenu: FunctionComponent = () => {
   }
 
   const options= [
-    { title: 'Account', onClick: toggleAccountModal!, icon: <UserCircleIcon className="w-5 lg:w-7 pr-2" />},
-    { title: 'Copy Address', onClick: copyAddress, icon: <ClipboardIcon className="w-5 lg:w-7 pr-2" />},
-    { title: 'Disconnect Wallet', onClick: disconnect, icon: <NoSymbolIcon className="w-5 lg:w-7 pr-2" />},
-    { title: 'Logout', onClick: onLogout, icon: <ArrowLeftOnRectangleIcon className="w-5 lg:w-7 pr-2 "/>},
+    { title: 'Account', onClick: toggleAccountModal!, icon: <UserCircleIcon className="w-7 pr-2" />},
+    { title: 'Copy Address', onClick: copyAddress, icon: <ClipboardIcon className="w-7 pr-2" />},
+    { title: 'Disconnect Wallet', onClick: disconnect, icon: <NoSymbolIcon className="w-7 pr-2" />},
+    { title: 'Logout', onClick: onLogout, icon: <ArrowLeftOnRectangleIcon className="w-7 pr-2 "/>},
   ]
 
   return (

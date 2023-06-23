@@ -52,8 +52,8 @@ const Header = ({ logoMode, showAuthButtons = true }: HeaderProps) => {
               <div className="md:hidden block">
                 <ShowMoreMenu
                   options={[
-                    { title: 'Login', onClick: toggleLoginModal, icon: <ArrowRightOnRectangleIcon className="w-5 lg:w-7 pr-2"/> },
-                    { title: 'Register', onClick: toggleRegisterModal, icon: <PencilSquareIcon className="w-5 lg:w-7 pr-2"/>}
+                    { title: 'Login', onClick: toggleLoginModal, icon: <ArrowRightOnRectangleIcon className="w-7 pr-2"/> },
+                    { title: 'Register', onClick: toggleRegisterModal, icon: <PencilSquareIcon className="w-7 pr-2"/>}
                   ]}
                 />
               </div>
