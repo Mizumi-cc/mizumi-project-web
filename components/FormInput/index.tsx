@@ -2,23 +2,23 @@ import { FunctionComponent } from "react";
 
 interface Props {
   type: string
-  placeholder: string
+  placeholder?: string
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onBlur?: (e: React.ChangeEvent<HTMLInputElement>) => void
   errors?: any
   label: string
-
+  darkBg?: boolean
 }
 
 const FormInput: FunctionComponent<Props> = ({
-  type, placeholder, value, onChange, onBlur, errors, label
+  type, placeholder, value, onChange, onBlur, errors, label, darkBg = true
 }) => {
 
   return (
     <div className="form-control w-full">
       <label className="label">
-        <span className="label-text text-white">{label}</span>
+        <span className={`label-text ${darkBg ? 'text-white' : 'text-black'}`}>{label}</span>
       </label>
       <input 
         type={type}
