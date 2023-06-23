@@ -1,27 +1,22 @@
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
+import { 
+  ArrowRightOnRectangleIcon, 
+  PencilSquareIcon,
+} from "@heroicons/react/20/solid"
 
 import Logo from "../Logo"
 import useAuthStore from "../../stores/auth"
-import { logout } from "../../services/auth"
+import AccountMenu from "../AccountMenu"
 import ShowMoreMenu from "../ShowMoreMenu"
+import useGlobalModalsStore from "../../stores/globalModals"
 
 interface HeaderProps {
   logoMode?: 'dark' | 'light'
-  showRegisterModal?: () => void
-  showLoginModal?: () => void
   showAuthButtons?: boolean
 }
 
-const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons = true }: HeaderProps) => {
-  const { user, token, reset } = useAuthStore()
-
-  const onLogout = async () => {
-    await logout(token!)
-      .then(() => {
-        reset()
-        sessionStorage.removeItem('token')
-      })
-  }
+const Header = ({ logoMode, showAuthButtons = true }: HeaderProps) => {
+  const { user } = useAuthStore()
+  const { toggleLoginModal, toggleRegisterModal } = useGlobalModalsStore()
 
   return (
     <header
@@ -42,23 +37,23 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
             <>
               <div className="md:flex flex-row items-center space-x-4 hidden">
                 <button
-                  onClick={showLoginModal}
+                  onClick={toggleLoginModal}
                   className="bg-black text-white font-medium rounded-md lg:text-base text-sm  lg:px-6 px-4 lg:py-[10px] py-[6px]"
                 >
                   Login
                 </button>
                 <button
-                  onClick={showRegisterModal}
+                  onClick={toggleRegisterModal}
                   className="bg-white text-black font-medium rounded-md lg:px-6 px-4 lg:py-[10px] py-[6px] lg:text-base text-sm"
                 >
                   Register
                 </button>
               </div>
               <div className="md:hidden block">
-                <ShowMoreMenu 
+                <ShowMoreMenu
                   options={[
-                    { title: 'Login', onClick: showLoginModal! },
-                    { title: 'Register', onClick: showRegisterModal!}
+                    { title: 'Login', onClick: toggleLoginModal, icon: <ArrowRightOnRectangleIcon className="w-7 pr-2"/> },
+                    { title: 'Register', onClick: toggleRegisterModal, icon: <PencilSquareIcon className="w-7 pr-2"/>}
                   ]}
                 />
               </div>
@@ -66,22 +61,8 @@ const Header = ({ logoMode, showRegisterModal, showLoginModal, showAuthButtons =
           )}
           {user && (
             <>
-              <div className="md:flex flex-row items-center space-x-3 hidden">
-                <WalletMultiButton />
-                <button
-                  onClick={onLogout}
-                  className="bg-black text-white font-medium rounded-md px-6 py-[10px]"
-                >
-                  Logout
-                </button>
-              </div>
-              <div className="md:hidden flex flex-row items-center">
-                <WalletMultiButton />
-                <ShowMoreMenu 
-                  options={[
-                    { title: 'Logout', onClick: onLogout }
-                  ]}
-                />
+              <div className="flex flex-row items-center">
+                <AccountMenu />
               </div>
             </>
           )}

@@ -13,11 +13,12 @@ import { getUserOrders } from '../services/order'
 import Toast from '../components/Toast'
 import useAlertStore from '../stores/alerts'
 import { Analytics } from '@vercel/analytics/react';
+import GlobalModals from '../components/GlobalModals'
 
 require('@solana/wallet-adapter-react-ui/styles.css')
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const { setUser, setToken, user, token } = useAuthStore()
+  const { refreshUser, setToken, user, token } = useAuthStore()
   const { orders, setOrders } = useUserOrdersStore()
   const { alerts, reset } = useAlertStore()
   const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC
@@ -44,18 +45,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     async function autoLogin() {
       const token = sessionStorage.getItem('token')
       if (token) {
-        const response = await fetchAuthenticatedUser(token)
-        if (response) {
-          setUser({
-            id: response.data.user.id,
-            username: response.data.user.username,
-            email: response.data.user.email,
-            walletAddress: response.data.user.wallet_address,
-            createdAt: response.data.user.created_at,
-            updatedAt: response.data.user.updated_at
-          })
-          setToken(token)
-        }
+        refreshUser(token)
+        setToken(token)
       }
     }
 
@@ -67,7 +58,28 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (user && token && orders.length === 0) {
         const response = await getUserOrders(user.id, token)
         if (response) {
-          setOrders(response.data.transactions)
+          const orders = response.data.transactions.map((order: any) => {
+            return {
+              id: order.id,
+              userId: order.user_id,
+              fiatAmount: order.fiat_amount,
+              fiat: order.fiat,
+              tokenAmount: order.token_amount,
+              token: order.token,
+              status: order.status,
+              kind: order.kind,
+              country: order.country,
+              fiatRate: order.fiat_rate,
+              tokenRate: order.token_rate,
+              transactionHash: order.transaction_hash,
+              errorReason: order.error_reason,
+              createdAt: order.created_at,
+              settledAt: order.settled_at,
+              updatedAt: order.updated_at,
+              payoutInfo: order.payout_info
+            }
+          })
+          setOrders(orders)
         }
       }
     }
@@ -88,6 +100,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           <Component {...pageProps} />
           <Analytics />
           <Toast messages={alerts} />
+          <GlobalModals />
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>

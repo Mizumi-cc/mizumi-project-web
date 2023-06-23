@@ -12,6 +12,12 @@ export type LoginForm = {
   username?: string
 }
 
+export type UpdateProfileForm = {
+  username?: string
+  firstName?: string
+  lastName?: string
+}
+
 export const register = async (form: RegisterForm) => {
   return await axios.post(
     `${process.env.NEXT_PUBLIC_SERVER_URL}/auth/register`,
@@ -76,6 +82,32 @@ export const saveWalletAddress = async (token: string, address: string) => {
   return await axios.patch(
     `${process.env.NEXT_PUBLIC_SERVER_URL}/api/v0/wallet-address`,
     { address },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    }
+  )
+}
+
+export const changePassword = async (token: string, oldPassword: string, newPassword: string) => {
+  return await axios.patch(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/auth/change-password`,
+    { oldPassword, newPassword },
+    {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
+    }
+  )
+}
+
+export const updateProfile = async (token: string, form: UpdateProfileForm) => {
+  return await axios.patch(
+    `${process.env.NEXT_PUBLIC_SERVER_URL}/auth/update-profile`,
+    form,
     {
       headers: {
         "Content-Type": "application/json",

@@ -6,6 +6,7 @@ import useAuthStore from "../../stores/auth"
 import { RegisterForm, register, isUniqueUsernameOrEmail } from "../../services/auth"
 import Loading from "../Loading"
 import useAlertStore from "../../stores/alerts"
+import useGlobalModalsStore from "../../stores/globalModals"
 
 interface Props {
   isOpen: boolean
@@ -15,8 +16,9 @@ interface Props {
 const RegisterModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
-  const { setUser, setToken, setShowLoginModal } = useAuthStore()
-    const { addAlert } = useAlertStore()
+  const { setUser, setToken } = useAuthStore()
+  const { toggleRegisterModal } = useGlobalModalsStore()
+  const { addAlert } = useAlertStore()
   const [busy, setBusy] = useState<boolean>(false)
   const [username, setUsername] = useState<string>('')
   const [email, setEmail] = useState<string>('')
@@ -132,7 +134,7 @@ const RegisterModal: FunctionComponent<Props> = ({
   }, [errors])
 
   const openLoginModal = () => {
-    setShowLoginModal(true)
+    toggleRegisterModal()
     onClose()
   }
 

@@ -4,6 +4,7 @@ import { Menu, Transition } from  "@headlessui/react"
 
 export type ShowMoreMenuOption = {
   title: string
+  icon: React.ReactNode
   onClick: () => void
 }
 
@@ -40,7 +41,7 @@ const ShowMoreMenu: FunctionComponent<Props> = ({ options }) => {
                       onClick={option.onClick}
                       className="group flex w-full items-center rounded-md px-2 py-2 text-sm text-white font-medium"
                     >
-                      {option.title}
+                      {option.icon} {option.title}
                     </button>
                   )}
                 </Menu.Item>
