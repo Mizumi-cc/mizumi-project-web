@@ -9,4 +9,6 @@ export default {
 const Template: StoryFn<typeof UserDetails> = (args) => <UserDetails {...args} />
 
 export const Default = Template.bind({})
-Default.args = {}
+Default.args = {
+  onEditClick: () => {},
+}
