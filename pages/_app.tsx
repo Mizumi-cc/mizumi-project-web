@@ -18,7 +18,7 @@ import GlobalModals from '../components/GlobalModals'
 require('@solana/wallet-adapter-react-ui/styles.css')
 
 function MyApp({ Component, pageProps }: AppProps) {
-  const { setUser, setToken, user, token } = useAuthStore()
+  const { refreshUser, setToken, user, token } = useAuthStore()
   const { orders, setOrders } = useUserOrdersStore()
   const { alerts, reset } = useAlertStore()
   const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC
@@ -45,18 +45,8 @@ function MyApp({ Component, pageProps }: AppProps) {
     async function autoLogin() {
       const token = sessionStorage.getItem('token')
       if (token) {
-        const response = await fetchAuthenticatedUser(token)
-        if (response) {
-          setUser({
-            id: response.data.user.id,
-            username: response.data.user.username,
-            email: response.data.user.email,
-            walletAddress: response.data.user.wallet_address,
-            createdAt: response.data.user.created_at,
-            updatedAt: response.data.user.updated_at
-          })
-          setToken(token)
-        }
+        refreshUser(token)
+        setToken(token)
       }
     }
 
