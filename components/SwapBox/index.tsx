@@ -21,6 +21,7 @@ import PayoutMethods from "../PayoutMethods"
 import { STABLES, FIATCURRENCY } from "../../utils/enums"
 import useAuthStore from "../../stores/auth"
 import useAlertStore from "../../stores/alerts"
+import useGlobalModalsStore from "../../stores/globalModals"
 interface SwapBoxProps {
   busy: boolean
   rates: Record<string, number>
@@ -48,8 +49,8 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   const { connected } = useWallet()
   const { setVisible } = useWalletModal()
   const user = useAuthStore((state) => state.user)
-  const { setShowLoginModal } = useAuthStore()
   const { addAlert } = useAlertStore()
+  const { toggleLoginModal } = useGlobalModalsStore()
 
   const [inputValue, setInputValue] = useState(0)
   const [debitCurrency, setDebitCurrency] = useState<Currency>(CURRENCIES[0])
@@ -91,7 +92,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
 
   const handleSubmit = () => {
     if (!user) {
-      setShowLoginModal(true)
+      toggleLoginModal()
       return
     }
     
@@ -216,8 +217,8 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   }, [creditAddress])
 
   return ( 
-    <div className="flex-col space-y-4 w-full md:w-fit">
-      <div className="flex-col space-y-3 lg:px-6 px-4 pt-4 lg:pb-10 pb-4 md:w-[448px] w-full bg-stone-700 rounded-xl shadow-md">
+    <div className="flex-col space-y-4 w-full sm:w-fit">
+      <div className="flex-col space-y-3 lg:px-6 px-4 pt-4 lg:pb-10 pb-4 sm:w-[448px] w-full bg-stone-700 rounded-xl shadow-md">
         <SwapInput 
           currencies={firstCurrencyList}
           selectedCurrency={debitCurrency!}
@@ -280,7 +281,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             />
           )}
           {creditCurrency?.name !== 'Ghana Cedi' && (
-            <WalletInput 
+            <WalletInput
               address={creditAddress}
               isValid={addressIsValid}
               onChange={setCreditAddress}
@@ -291,7 +292,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
       <button
         onClick={handleSubmit}
         disabled={busy || insufficientBalance}
-        className={`md:w-[448px] w-full bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
+        className={`md:w-[448px] w-full bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px]`}
       >
         <div className="w-full h-full bg-black rounded-lg flex justify-center items-center">
           {busy ? 
