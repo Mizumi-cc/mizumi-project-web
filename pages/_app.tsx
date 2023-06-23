@@ -68,7 +68,28 @@ function MyApp({ Component, pageProps }: AppProps) {
       if (user && token && orders.length === 0) {
         const response = await getUserOrders(user.id, token)
         if (response) {
-          setOrders(response.data.transactions)
+          const orders = response.data.transactions.map((order: any) => {
+            return {
+              id: order.id,
+              userId: order.user_id,
+              fiatAmount: order.fiat_amount,
+              fiat: order.fiat,
+              tokenAmount: order.token_amount,
+              token: order.token,
+              status: order.status,
+              kind: order.kind,
+              country: order.country,
+              fiatRate: order.fiat_rate,
+              tokenRate: order.token_rate,
+              transactionHash: order.transaction_hash,
+              errorReason: order.error_reason,
+              createdAt: order.created_at,
+              settledAt: order.settled_at,
+              updatedAt: order.updated_at,
+              payoutInfo: order.payout_info
+            }
+          })
+          setOrders(orders)
         }
       }
     }
