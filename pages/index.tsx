@@ -284,7 +284,7 @@ export default function Swap() {
           onSubmit={handleSwapOrConnectClick}
         />
         <div
-          className="lg:fixed lg:top-20 lg:left-8 lg:w-1/12 w-full"
+          className="xl:fixed xl:top-20 xl:left-8 xl:w-1/12 sm:w-[448px] w-full"
         >
           <RatesBox 
             usdcRate={usdcRate}
