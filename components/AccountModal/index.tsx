@@ -60,7 +60,7 @@ const AccountModal: FunctionComponent<Props> = (
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className={`md:w-1/2 w-[400px] lg:h-[600px] transform overflow-hidden rounded-xl bg-white py-4 text-left align-middle shadow-xl transition-all px-4 pt-4`}
+                className={`xl:w-1/3 lg:w-2/5 w-[400px] lg:h-[600px] transform overflow-hidden rounded-xl bg-white py-4 text-left align-middle shadow-xl transition-all px-4 pt-4`}
               >
                 <button
                   onClick={handleClose}

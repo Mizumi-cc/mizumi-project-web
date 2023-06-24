@@ -11,7 +11,6 @@ import useUserOrdersStore from "../../stores/userOrders"
 const UserTransactions: FunctionComponent = () => {
   const { orders } = useUserOrdersStore()
 
-
   const emptyList = useMemo(() => {
     return orders.length === 0
   }, [orders])
@@ -39,7 +38,7 @@ const UserTransactions: FunctionComponent = () => {
           <p className="text-center">You have no transactions yet</p>
         </div>
       ): (
-        <TransactionList 
+        <TransactionList
           data={transactions}
         />
       )}

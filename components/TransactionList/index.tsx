@@ -19,18 +19,6 @@ const TransactionList: FunctionComponent<Props> = ({
           transaction={transaction}
         />
       ))}
-      {data.map((transaction, index) => (
-        <Transaction
-          key={index}
-          transaction={transaction}
-        />
-      ))}
-      {data.map((transaction, index) => (
-        <Transaction
-          key={index}
-          transaction={transaction}
-        />
-      ))}
     </div>
   )
 }
