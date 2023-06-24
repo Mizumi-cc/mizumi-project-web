@@ -34,7 +34,7 @@ const UserDetails: FunctionComponent<Props> = ({
           onClick={onEditClick}
           className='border-b border-black font-semibold hover:border-blue-400 mt-3 text-black'
         >
-          Edit Profile
+          Edit Account
         </button>
       </div>
     </>

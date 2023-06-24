@@ -113,7 +113,7 @@ const EditAccount: FunctionComponent<Props> = ({ goBack }) => {
       >
         <ChevronLeftIcon className="text-black w-8"/>
         <p
-          className="text-3xl font-thin underline"
+          className="text-3xl font-thin underline text-black"
         >
           Edit Account
         </p>
