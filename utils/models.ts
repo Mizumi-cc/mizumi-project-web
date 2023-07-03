@@ -27,6 +27,7 @@ export type User = {
   walletAddress: string
   createdAt: string
   updatedAt: string
+  twoFactorEnabled?: boolean
 }
 
 export type Alert = {

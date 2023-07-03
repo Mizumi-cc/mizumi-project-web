@@ -32,9 +32,10 @@ const useAuthStore = create<AuthState & Actions>((set) => ({
         email: response.data.user.email,
         walletAddress: response.data.user.wallet_address,
         createdAt: response.data.user.created_at,
-        updatedAt: response.data.user.updated_at
+        updatedAt: response.data.user.updated_at,
+        twoFactorEnabled: response.data.two_factor_enabled,
       }
-    })
+    })    
   },
   setToken: (token) => set({ token }),
   setUser: (user) => set({ user }),

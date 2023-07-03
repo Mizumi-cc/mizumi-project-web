@@ -5,10 +5,12 @@ import useAuthStore from '../../stores/auth'
 
 interface Props {
   onEditClick: () => void
+  onEnable2FAClick: () => void
+  onDisable2FAClick: () => void
 }
 
 const UserDetails: FunctionComponent<Props> = ({
-  onEditClick
+  onEditClick, onEnable2FAClick, onDisable2FAClick
 }) => {
   const { user } = useAuthStore()
 
@@ -30,12 +32,30 @@ const UserDetails: FunctionComponent<Props> = ({
           <span className='mr-2 w-20 italic font-semibold'>joined</span>
           {DateTime.fromISO(user!.createdAt).toLocaleString(DateTime.DATE_MED)}
         </p>
-        <button
-          onClick={onEditClick}
-          className='border-b border-black font-semibold hover:border-blue-400 mt-3 text-black'
-        >
-          Edit Account
-        </button>
+        <div className='flex flex-row items-center space-x-6'>
+          <button
+            onClick={onEditClick}
+            className='border-b border-black font-semibold hover:border-blue-400 mt-3 text-black'
+          >
+            Edit Account
+          </button>
+          {!user?.twoFactorEnabled && (
+            <button
+              onClick={onEnable2FAClick}
+              className='border-b border-black font-semibold hover:border-blue-400 mt-3 text-black'
+            >
+              Enable 2FA
+            </button>
+          )}
+          {user?.twoFactorEnabled && (
+            <button
+              onClick={onDisable2FAClick}
+              className='border-b border-black font-semibold hover:border-blue-400 mt-3 text-black'
+            >
+              Disable 2FA
+            </button>
+          )}
+        </div>
       </div>
     </>
   )

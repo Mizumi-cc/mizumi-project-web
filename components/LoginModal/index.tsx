@@ -16,7 +16,7 @@ const LoginModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
   const { setUser, setToken } = useAuthStore()
-  const { toggleLoginModal } = useGlobalModalsStore()
+  const { toggleRegisterModal, toggle2FAChallengeModal } = useGlobalModalsStore()
   const { addAlert } = useAlertStore()
   const [busy, setBusy] = useState<boolean>(false)
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('')
@@ -47,7 +47,11 @@ const LoginModal: FunctionComponent<Props> = ({
           setAuthError('Something went wrong')
         }
       })
-    if (response) {
+    if (response && response.data.twoFactorRequired) {
+      sessionStorage.setItem('id', usernameOrEmail.trim())
+      toggle2FAChallengeModal()
+      handleClose()
+    } else if (response && response.data.token) {
       clearForm()
       setToken(response.data.token.token)
       setUser({
@@ -56,7 +60,8 @@ const LoginModal: FunctionComponent<Props> = ({
         email: response.data.user.email,
         walletAddress: response.data.user.wallet_address,
         createdAt: response.data.user.created_at,
-        updatedAt: response.data.user.updated_at
+        updatedAt: response.data.user.updated_at,
+        twoFactorEnabled: response.data.twoFactorEnabled
       })
       sessionStorage.setItem('token', response.data.token.token)
       onClose()
@@ -122,7 +127,7 @@ const LoginModal: FunctionComponent<Props> = ({
   }, [errors])
 
   const openRegisterModal = () => {
-    toggleLoginModal()
+    toggleRegisterModal()
     onClose()
   }
 

@@ -1,11 +1,16 @@
-import { FunctionComponent, Fragment, useState } from "react"
-import { Dialog, Transition } from "@headlessui/react"
-import { XCircleIcon } from "@heroicons/react/20/solid"
+import { FunctionComponent, useState } from "react"
 
 //components
 import EditAccount from "../EditAccount"
 import UserDetails from "../UserDetails"
 import UserTransactions from "../UserTransactions"
+import Modal from "../Modal"
+
+//stores, services
+import useAuthStore from "../../stores/auth"
+import useAlertStore from "../../stores/alerts"
+import useGlobalModalsStore from "../../stores/globalModals"
+import { disableTwoFactor } from "../../services/auth"
 
 interface Props {
   isOpen: boolean
@@ -15,6 +20,8 @@ interface Props {
 const AccountModal: FunctionComponent<Props> = (
   { isOpen, onClose }
 ) => {
+  const { token } = useAuthStore()
+  const { addAlert } = useAlertStore()
   const [editing, setEditing] = useState(false)
 
   const onEditClick = () => {
@@ -26,67 +33,49 @@ const AccountModal: FunctionComponent<Props> = (
     setEditing(false)
   }
 
+  const onEnable2FAClick = () => {
+    handleClose()
+    useGlobalModalsStore.getState().toggleEnable2FAModal()
+  }
+
+  const onDisable2FAClick = async() => {
+    await disableTwoFactor(token!)
+      .then(() => {
+        useAuthStore.getState().setUser({
+          ...useAuthStore.getState().user!,
+          twoFactorEnabled: false
+        })
+        addAlert({
+          type: 'success',
+          text: 'Two factor authentication disabled'
+        })
+      })
+  }
+
   return (
-    <Transition
-      appear
-      show={isOpen}
-      as={Fragment}
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
     >
-      <Dialog
-        as="div"
-        className={"relative z-10"}
-        onClose={onClose}
-      >
-        <Transition.Child
-          as={Fragment}
-          enter="ease-out duration-300"
-          enterFrom="opacity-0"
-          enterTo="opacity-100"
-          leave="ease-in duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-        >
-          <div className="fixed inset-0 bg-black bg-opacity-25" />
-        </Transition.Child>
-        <div className="fixed inset-0 overflow-y-auto bg-black bg-opacity-25 backdrop-blur-sm">
-          <div className="flex min-h-full items-center justify-center p-4 text-center">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
-            >
-              <Dialog.Panel
-                className={`xl:w-1/3 lg:w-2/5 w-[400px] lg:h-[600px] transform overflow-hidden rounded-xl bg-white py-4 text-left align-middle shadow-xl transition-all px-4 pt-4`}
-              >
-                <button
-                  onClick={handleClose}
-                  className="absolute top-1 right-1 ring-0 focus:outline-none"
-                >
-                  <XCircleIcon className="w-10 text-black"/>
-                </button>
-                {!editing ? (
-                  <>
-                    <UserDetails
-                      onEditClick={onEditClick}
-                    />
-                    <div className="h-10"/>
-                    <UserTransactions />
-                  </>
-                ) : (
-                  <EditAccount 
-                    goBack={() => setEditing(false)}
-                  />
-                )}
-              </Dialog.Panel>
-            </Transition.Child>
-          </div>
-        </div>
-      </Dialog>
-    </Transition>
+      <>
+        {!editing && (
+          <>
+            <UserDetails
+              onEditClick={onEditClick}
+              onEnable2FAClick={onEnable2FAClick}
+              onDisable2FAClick={onDisable2FAClick}
+            />
+            <div className="h-10"/>
+            <UserTransactions />
+          </>
+        )}
+        {editing && (
+          <EditAccount 
+            goBack={() => setEditing(false)}
+          />
+        )}
+      </>
+    </Modal>
   )
 }
 

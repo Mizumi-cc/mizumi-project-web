@@ -4,6 +4,8 @@ import { FunctionComponent } from "react"
 import LoginModal from "./LoginModal"
 import RegisterModal from "./RegisterModal"
 import AccountModal from "./AccountModal"
+import Enable2FAModal from "./Enable2FAModal"
+import TwoFAChallengeModal from "./TwoFAChallengeModal"
 
 // store
 import useGlobalModalsStore from "../stores/globalModals"
@@ -13,9 +15,13 @@ const GlobalModals: FunctionComponent = () => {
     isAccountModalOpen,
     isLoginModalOpen,
     isRegisterModalOpen,
+    isEnable2FAModalOpen,
+    is2FAChallengeModalOpen,
     toggleAccountModal,
     toggleLoginModal,
-    toggleRegisterModal
+    toggleRegisterModal,
+    toggleEnable2FAModal,
+    toggle2FAChallengeModal
   } = useGlobalModalsStore()
 
   return (
@@ -31,6 +37,16 @@ const GlobalModals: FunctionComponent = () => {
       <AccountModal 
         isOpen={isAccountModalOpen} 
         onClose={toggleAccountModal} 
+      />
+      {isEnable2FAModalOpen && (
+        <Enable2FAModal
+          isOpen={isEnable2FAModalOpen}
+          onClose={toggleEnable2FAModal}
+        />
+      )}
+      <TwoFAChallengeModal
+        isOpen={is2FAChallengeModalOpen}
+        onClose={toggle2FAChallengeModal}
       />
     </>
   )

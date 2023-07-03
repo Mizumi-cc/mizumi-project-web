@@ -17,7 +17,7 @@ const RegisterModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
   const { setUser, setToken } = useAuthStore()
-  const { toggleRegisterModal } = useGlobalModalsStore()
+  const { toggleLoginModal } = useGlobalModalsStore()
   const { addAlert } = useAlertStore()
   const [busy, setBusy] = useState<boolean>(false)
   const [username, setUsername] = useState<string>('')
@@ -134,7 +134,7 @@ const RegisterModal: FunctionComponent<Props> = ({
   }, [errors])
 
   const openLoginModal = () => {
-    toggleRegisterModal()
+    toggleLoginModal()
     onClose()
   }
 
