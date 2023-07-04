@@ -228,7 +228,9 @@ export default function Swap() {
 
   useEffect(() => {
     async function fetchOrder() {
-      const order = await getOrder(router.query.reference as string)
+      const path = router.asPath
+      const reference = path.split('=')[1]
+      const order = await getOrder(reference)
         .then(res => res.data.transaction)
 
       setActiveOrder({
@@ -251,7 +253,8 @@ export default function Swap() {
       }
     }
 
-    if (router.query.reference) {
+    if (router.asPath.includes('reference')) {
+      console.log('reference')
       setBusy(true)
       setShowVerifyingModal(true)
       fetchOrder()
