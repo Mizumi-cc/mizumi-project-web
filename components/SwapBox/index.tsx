@@ -46,7 +46,7 @@ export interface SwapData {
 }
 
 const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
   const { setVisible } = useWalletModal()
   const user = useAuthStore((state) => state.user)
   const { addAlert } = useAlertStore()
@@ -252,7 +252,15 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             {payoutAmount.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2})}
           </p>
         </div>
-        <p className="text-white font-bold text-sm">Payout Info</p>
+        <div className="flex flex-row items-center justify-between">
+          <p className="text-white font-bold text-sm">Payout Info</p>
+          <button
+            onClick={() => setCreditAddress(publicKey!.toBase58())}
+            className="uppercase text-white rounded-2xl px-[8px] py-[2px] border border-gray-500 text-[10px] font-semibold bg-stone-800"
+          >
+            my wallet
+          </button>
+        </div>
         <AnimatePresence>
           {creditCurrency?.name === 'Ghana Cedi' && selectedPayoutMethod === '' && (
             <PayoutMethods 
