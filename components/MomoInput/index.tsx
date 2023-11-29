@@ -83,13 +83,13 @@ const MomoInput: FunctionComponent<Props> = ({
         value={phone}
         placeholder="Enter phone number"
         onChange={(e) => onPhoneChange(e.target.value)}
-        className="rounded-lg bg-black py-4 text-white outline-none px-3 sm:text-sm font-medium text-lg"
+        className="rounded-lg bg-black xl:text-lg text-base xl:py-4 py-3 text-white outline-none px-3 sm:text-sm font-medium"
       />
       <input 
         value={name}
         placeholder="Enter name"
         onChange={(e) => onNameChange(e.target.value)}
-        className="rounded-lg bg-black py-4 text-white outline-none px-3 sm:text-sm font-medium text-lg"
+        className="rounded-lg bg-black xl:py-4 py-3 xl:text-lg text-base text-white outline-none px-3 sm:text-sm font-medium"
       />
     </motion.div>
   )

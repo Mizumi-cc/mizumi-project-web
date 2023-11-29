@@ -7,6 +7,7 @@ export interface Currency {
   name: string
   symbol: string
   image: string
+  mintAddress?: string
 }
 
 interface CurrencyMenuProps {
@@ -18,9 +19,9 @@ interface CurrencyMenuProps {
 const CurrencyMenu = ({currencies, selectedCurrency, onChange}: CurrencyMenuProps) => {
   return (
     <Menu as="div" className="relative inline-block text-left z-10">
-      <div className="relative mt-1">
-        <Menu.Button className="relative w-full rounded-lg bg-transparent py-2 pl-3 pr-10 text-left sm:text-sm hover:bg-gray-100 hover:bg-opacity-20 cursor-pointer">
-          <span className="block truncate text-white font-bold text-lg tracking-wider">{selectedCurrency.symbol}</span>
+      <div className="relative lg:mt-1">
+        <Menu.Button className="relative w-full rounded-lg bg-transparent lg:py-2 py-1 pl-3 lg:pr-10 pr-8 text-left sm:text-sm hover:bg-gray-100 hover:bg-opacity-20 cursor-pointer">
+          <span className="block truncate text-white font-bold xl:text-lg text-base tracking-wider">{selectedCurrency.symbol}</span>
           <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
             <ChevronUpDownIcon
               className="h-5 w-5 text-gray-400"

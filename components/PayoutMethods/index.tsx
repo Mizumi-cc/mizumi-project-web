@@ -36,7 +36,7 @@ const PayoutMethods: FunctionComponent<Props> = (
                   ${
                     checked ? 'bg-sky-900 bg-opacity-75 text-white' : 'bg-white'
                   }
-                    relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md focus:outline-none`
+                    relative flex cursor-pointer rounded-lg lg:px-5 px-3 lg:py-4 py-2 shadow-md focus:outline-none`
                 }
               >
                 {({ active, checked, disabled }) => (
