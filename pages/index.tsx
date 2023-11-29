@@ -1,76 +1,310 @@
-import { useMemo, useState } from "react"
+import { useState, useEffect } from "react"
+import { useConnection, useWallet } from "@solana/wallet-adapter-react"
+import { useWalletModal } from "@solana/wallet-adapter-react-ui"
+import { PythHttpClient, getPythClusterApiUrl, getPythProgramKeyForCluster } from "@pythnetwork/client"
+import { VersionedTransaction, Connection } from "@solana/web3.js"
+import io from "socket.io-client"
 
 // components
 import HTMLHead from "../components/HTMLHead"
 import Header from "../components/Header"
-import Loading from "../components/Loading"
+import SwapBox from "../components/SwapBox"
+import type { SwapData } from "../components/SwapBox"
+import RatesBox from "../components/RatesBox"
+import SuccessModal from "../components/SuccessModal"
+import VeryfyingPaymentModal from "../components/VeryfyingPaymentModal"
 
-//services
-import { joinWaitlist } from "../services/waitlist"
+// stores
+import useAuthStore from "../stores/auth"
+import useUserOrdersStore from "../stores/userOrders"
+import useAlertStore from "../stores/alerts"
 
-export default function Home() {
-  const [busy, setBusy] = useState(false)
-  const [email, setEmail] = useState('')
-  const [requestStatus, setRequestStatus] = useState('')
+// services
+import { getGHSRates } from "../services/rates"
+import { saveWalletAddress } from "../services/auth"
+import { createOrder, createUserProgramAccountTx, initiateDebit, initiateCredit, getOrder, completeOrder } from "../services/order"
 
-  const validEmail = useMemo(() => {
-    if (email.length === 0) return false
-    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)) {
-      return true
-    } else {
-      return false
+// utils
+import type { Order } from "../utils/models"
+import { STABLES, TRANSACTIONKIND, TRANSACTIONSTATUS } from "../utils/enums"
+import { useRouter } from "next/router"
+
+let socket
+
+export default function Swap() {
+  const router = useRouter()
+  const { token, user } = useAuthStore()
+  const { orders } = useUserOrdersStore()
+  const { connected, publicKey, sendTransaction } = useWallet()
+  const { connection } = useConnection()
+  const { setVisible } = useWalletModal()
+  const { addAlert } = useAlertStore()
+
+  const [busy, setBusy] = useState<boolean>(false)
+  const [ghsRate, setGhsRate] = useState<number>(0)
+  const [usdcRate, setUsdcRate] = useState<number>(0)
+  const [usdtRate, setUsdtRate] = useState<number>(0)
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null)
+  const [showSuccessModal, setShowSuccessModal] = useState<boolean>(false)
+  const [crediting, setCrediting] = useState<boolean>(false)
+  const [showVerifyingModal, setShowVerifyingModal] = useState<boolean>(false)
+  const [paymentVerified, setPaymentVerified] = useState<boolean>(false)
+
+  const handleSwapOrConnectClick = async(data: SwapData) => {
+    if (!connected) {
+      setVisible(true)
+      return
     }
-  }, [email])
-
-  const handleSubmit = async () => {
     setBusy(true)
-    await joinWaitlist(email)
-      .then(res => {
-        setRequestStatus('You have been added to the waitlist!')
-        setBusy(false)
-      })
-      .catch(err => {
-        setBusy(false)  
-        console.log(err)
-        setRequestStatus('Something went wrong.')
-      })
-    
+    const { txId, dbTransaction } = await handleCreateOrder(data)
+    await initiateDebit(
+      { txId: dbTransaction.id, userId: user!.id, blockchainTxId: txId! },
+      token!
+    ).then(async (res) => {
+      if (res.status === 200) {
+        if (res.data.paymentLink) {
+          window.location.href = res.data.paymentLink
+        } else if (res.data.serializedTransaction) {
+          const hash = await signAndSendTransaciton(res.data.serializedTransaction)
+          confirmTxAndCreditFiat(hash!, dbTransaction.id)
+        }
+      }
+    })
   }
 
+  const handleCreateProgramUserAccount = async () => {
+    if (orders.length !== 0) return
+
+    const serializedTransaction = await createUserProgramAccountTx(user!.id, token!)
+      .then((res) => res.data.serializedTransaction)
+    const transaction = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(serializedTransaction, 'base64')))
+    await sendTransaction!(transaction, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+  }
+
+  const handleCreditUserWallet = async (userId: string) => {
+    setCrediting(true)
+    const token = sessionStorage.getItem('token')
+
+    const serializedTransaction = await initiateCredit(userId, router.query.reference as string, token!)
+      .then((res) => res.data.serializedTransaction)
+    const hash = await signAndSendTransaciton(serializedTransaction)
+    const blockhash = await connection.getLatestBlockhash()
+    await connection.confirmTransaction({ 
+      signature: hash!, 
+      blockhash:blockhash.blockhash, 
+      lastValidBlockHeight: blockhash.lastValidBlockHeight 
+    }, 'confirmed').catch((err) => {
+      console.log(err)
+      setBusy(false)
+    })
+    handleCompleteOrder(router.query.reference as string)
+  }
+
+  const confirmTxAndCreditFiat = async (hash: string, txId: string) => {
+    await connection.confirmTransaction(hash, 'confirmed')
+      .catch((err) => {
+        console.log(err)
+        setBusy(false)
+      })
+    await initiateCredit(user!.id, txId, token!)
+      .catch((err) => {
+        console.log(err)
+        setBusy(false)
+      })
+    handleCompleteOrder(txId)
+  }
+
+
+
+  const handleCreateOrder = async (data: SwapData) => {
+    const order: Order = {
+      fiatAmount: data.debitType === 'Fiat' ? data.debitAmount : data.creditAmount,
+      userId: user!.id,
+      tokenAmount: data.debitType === 'Fiat' ? data.creditAmount : data.debitAmount,
+      token: data.debitType === 'Fiat' ? data.creditCurrency : data.debitCurrency,
+      fiat: data.debitType === 'Fiat' ? data.debitCurrency : data.creditCurrency,
+      country: 'Ghana',
+      kind: data.debitType === 'Fiat' ? TRANSACTIONKIND.ONRAMP : TRANSACTIONKIND.OFFRAMP,
+      fiatRate: ghsRate,
+      tokenRate: data.debitType === 'Fiat' ? data.creditCurrency === STABLES.USDC ? usdcRate : usdtRate : ghsRate,
+      payoutInfo: data.debitType === 'Fiat' ? {
+        method: 'wallet',
+        walletAddress: data.creditInfo.walletAddress
+      } : {
+        method: data.creditInfo.accountNumber ? 'bank' : 'mobile',
+        accountNumber: data.creditInfo.accountNumber,
+        accountName: data.creditInfo.accountName,
+        momoNumber: data.creditInfo.momoNumber,
+        momoName: data.creditInfo.momoName,
+        momoNetwork: data.creditInfo.momoNetwork
+      }
+    }
+    const response = await createOrder(order, token!)
+      .then(res => {
+        if (res.status === 200) {
+          return res.data
+        }
+      })
+      .catch(err => {
+        setBusy(false)
+      })
+    const txId = await signAndSendTransaciton(response.serializedTransaction)
+    await connection.confirmTransaction(txId!, 'confirmed')
+    return { txId, dbTransaction: response.dbTransaction }
+  }
+
+  const signAndSendTransaciton = async (solanaTx: string) => {
+    const tx = VersionedTransaction.deserialize(Uint8Array.from(Buffer.from(solanaTx, 'base64')))
+    return await sendTransaction(tx, connection, { skipPreflight: true, preflightCommitment: 'confirmed' })
+      .catch((err) => {
+        setBusy(false)
+      })
+  }
+
+  const handleCompleteOrder = async (txId: string) => {
+    const tx = await completeOrder(user!.id, txId, token!)
+      .then(res => res.data.serializedTransaction)
+    const transactionHash = await signAndSendTransaciton(tx)
+    setShowVerifyingModal(false)
+    setBusy(false)
+    setShowSuccessModal(true)
+    console.log(transactionHash, 'transaction hash')
+  }
+
+  const initializeSocket = async () => {
+    socket = io(process.env.NEXT_PUBLIC_SERVER_URL!)
+    socket.on('news', () => {
+      console.log('connected')
+    })
+    socket.on('order', (msg) => {
+      console.log(msg)
+      if (msg.id === router.query.reference && msg.status === 'debited') {
+        setPaymentVerified(true)
+      }
+    })
+  }
+
+  useEffect(() => {
+    async function getRates() {
+      const response = await getGHSRates()
+      if (response) {
+        setGhsRate(response.data.rates.GHS)
+      }
+    }
+
+    getRates()
+  }, [])
+
+  useEffect(() => {
+    async function storeUserWallet() {
+      if (connected && publicKey && user && !user?.walletAddress) {
+        await saveWalletAddress(token!, publicKey!.toBase58())
+        handleCreateProgramUserAccount()
+      }
+    }
+    storeUserWallet()
+  }, [connected, user])
+
+
+  useEffect(() => {
+   async function getPythPrices() {
+    const pythConnection = new Connection(getPythClusterApiUrl('devnet'))
+    const pythClient = new PythHttpClient(pythConnection, getPythProgramKeyForCluster('devnet'))
+    const data = await pythClient.getData()
+    for (const symbol of data.symbols) {
+      const price = data.productPrice.get(symbol)!
+      if (price.price && price.confidence) {
+        if (symbol === 'Crypto.USDC/USD') {
+          setUsdcRate(price.price)
+        } else if (symbol === 'Crypto.USDT/USD') {
+          setUsdtRate(price.price)
+        }
+      }
+    }
+   }
+
+    getPythPrices()
+  }, [])
+
+  useEffect(() => {
+    async function fetchOrder() {
+      const path = router.asPath
+      const reference = path.split('=')[1]
+      const order = await getOrder(reference)
+        .then(res => res.data.transaction)
+
+      setActiveOrder({
+        userId: order.user_id,
+        token: order.token,
+        tokenAmount: order.token_amount,
+        fiat: order.fiat,
+        fiatAmount: order.fiat_amount,
+        status: order.status,
+        kind: order.kind,
+        country: order.country,
+        tokenRate: order.token_rate,
+        fiatRate: order.fiat_rate,
+        payoutInfo: order.payout_info,
+        createdAt: order.created_at,
+      })
+
+      if (order.status !== TRANSACTIONSTATUS.DEBITING) {
+        setPaymentVerified(true)
+      }
+    }
+
+    if (router.asPath.includes('reference')) {
+      console.log('reference')
+      setBusy(true)
+      setShowVerifyingModal(true)
+      fetchOrder()
+    }
+  }, [])
+
+  useEffect(() => {
+    initializeSocket()
+  }, [])
+
+  useEffect(() => {
+    if(connected && showVerifyingModal && busy && activeOrder && paymentVerified) {
+      handleCreditUserWallet(activeOrder.userId)
+    }
+  }, [connected, showVerifyingModal, busy, activeOrder, paymentVerified])
+
+
   return (
-    <main
-      className="lg:h-screen min-h-screen flex flex-col bg-stone-800 lg:px-0 px-4"
-    >
+    <main className='min-h-screen flex flex-col bg-stone-800 lg:px-0 px-4 lg:pb-0 pb-12'>
       <HTMLHead />
-      <Header showAuthButtons={false} />
-      <div
-        className="flex justify-center items-center flex-col lg:h-full my-auto xl:mb-40"
-      >
-        <h1 className="font-bold text-white xl:text-5xl xl:w-[800px] md:w-[550px] text-3xl text-center leading-snug mb-6">
-          Empowering Cross-Border Transactions in Africa
-        </h1>
-        <p className="text-white xl:w-[600px] md:w-[500px] text-center lg:tracking-wider tracking-wide mb-20">
-          Mizumi is a non-custodial exchange that enables users to swap stable coins (USDC, USDT) for national African currencies directly and securely.
-          It leverages liquidity pools to facilitate these swaps and bridge the gap between traditional finance and digital assets
-        </p>
-        <input
-          type="email"
-          value={email}
-          placeholder="Email address"
-          onChange={e => setEmail(e.target.value)}
-          className="bg-transparent outline-none text-white text-center text-lg border-b border-gray-400 focus:border-white focus:border-b-2 focus:ring-0 transition-all w-[300px]"
+      <Header />
+      <div className="justify-center items-center flex flex-col h-full lg:pt-32 pt-28 space-y-10">
+        <SwapBox 
+          busy={busy}
+          rates={{
+            USDC: usdcRate,
+            USDT: usdtRate,
+            GHS: ghsRate,
+          }}
+          onSubmit={handleSwapOrConnectClick}
         />
-        {requestStatus.length > 0 && (
-          <p className="text-white text-sm mt-2 tracking-wide">{requestStatus}</p>
-        )}
-        <button
-          onClick={handleSubmit}
-          disabled={!validEmail || busy}
-          className={`bg-transparent border ${validEmail ? 'border-[#6ACAFF]' : 'border-white'} rounded-3xl text-white text-lg mt-8 px-4 py-2 tracking-wide transition-all`}
+        <div
+          className="xl:fixed xl:top-20 xl:left-8 xl:w-1/12 sm:w-[448px] w-full"
         >
-          {busy ? <Loading /> : 'Join the private beta'}
-        </button>
-      </div>
+          <RatesBox 
+            usdcRate={usdcRate}
+            ghsRate={ghsRate}
+            usdtRate={usdtRate}
+          />
+        </div>
+      </div>     
+      <SuccessModal 
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+      />
+      <VeryfyingPaymentModal 
+        isOpen={showVerifyingModal}
+        onClose={() => setShowVerifyingModal(false)}
+        verified={paymentVerified}
+      />
     </main>
   )
 }

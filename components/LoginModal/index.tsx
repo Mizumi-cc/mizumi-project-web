@@ -6,7 +6,7 @@ import useAuthStore from "../../stores/auth"
 import { LoginForm, login } from "../../services/auth"
 import Loading from "../Loading"
 import useAlertStore from "../../stores/alerts"
-
+import useGlobalModalsStore from "../../stores/globalModals"
 interface Props {
   isOpen: boolean
   onClose: () => void
@@ -15,7 +15,8 @@ interface Props {
 const LoginModal: FunctionComponent<Props> = ({
   isOpen, onClose
 }) => {
-  const { setUser, setToken, setShowRegisterModal } = useAuthStore()
+  const { setUser, setToken } = useAuthStore()
+  const { toggleRegisterModal, toggle2FAChallengeModal } = useGlobalModalsStore()
   const { addAlert } = useAlertStore()
   const [busy, setBusy] = useState<boolean>(false)
   const [usernameOrEmail, setUsernameOrEmail] = useState<string>('')
@@ -46,7 +47,11 @@ const LoginModal: FunctionComponent<Props> = ({
           setAuthError('Something went wrong')
         }
       })
-    if (response) {
+    if (response && response.data.twoFactorRequired) {
+      sessionStorage.setItem('id', usernameOrEmail.trim())
+      toggle2FAChallengeModal()
+      handleClose()
+    } else if (response && response.data.token) {
       clearForm()
       setToken(response.data.token.token)
       setUser({
@@ -55,7 +60,8 @@ const LoginModal: FunctionComponent<Props> = ({
         email: response.data.user.email,
         walletAddress: response.data.user.wallet_address,
         createdAt: response.data.user.created_at,
-        updatedAt: response.data.user.updated_at
+        updatedAt: response.data.user.updated_at,
+        twoFactorEnabled: response.data.twoFactorEnabled
       })
       sessionStorage.setItem('token', response.data.token.token)
       onClose()
@@ -121,7 +127,7 @@ const LoginModal: FunctionComponent<Props> = ({
   }, [errors])
 
   const openRegisterModal = () => {
-    setShowRegisterModal(true)
+    toggleRegisterModal()
     onClose()
   }
 
@@ -159,7 +165,7 @@ const LoginModal: FunctionComponent<Props> = ({
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel
-                className="w-fit transform overflow-hidden rounded-xl bg-stone-700 py-4 text-left align-middle shadow-xl transition-all min-w-[400px]"
+                className="w-fit transform overflow-hidden rounded-xl bg-stone-700 py-4 text-left align-middle shadow-xl transition-all lg:min-w-[400px] min-w-[340px]"
               >
                 <Dialog.Title
                   as="h3"
@@ -202,18 +208,19 @@ const LoginModal: FunctionComponent<Props> = ({
                     </div>
                   </button>
                 </div>
-                <div className={`flex flex-row items-center justify-between px-6 mt-2 ${authError.length > 0 ? '' : 'mb-6'}`}>
-                  <p className="text-white text-sm font-medium">New here?</p>
-                  <button
-                    onClick={openRegisterModal}
-                    className="text-white text-sm font-medium"
-                  >
-                    Create account
-                  </button>
-                </div>
-                {authError.length > 0 && (
-                  <div>
+                {authError.length > 0 ? (
+                  <div className="mt-2">
                     <p className="text-center text-red-500">{authError}</p>
+                  </div>
+                ) : (
+                  <div className={`flex flex-row items-center justify-between px-6 mt-2 ${authError.length > 0 ? '' : 'mb-6'}`}>
+                    <p className="text-white text-sm font-medium">New here?</p>
+                    <button
+                      onClick={openRegisterModal}
+                      className="text-white text-sm font-medium"
+                    >
+                      Create account
+                    </button>
                   </div>
                 )}
               </Dialog.Panel>

@@ -21,6 +21,7 @@ import PayoutMethods from "../PayoutMethods"
 import { STABLES, FIATCURRENCY } from "../../utils/enums"
 import useAuthStore from "../../stores/auth"
 import useAlertStore from "../../stores/alerts"
+import useGlobalModalsStore from "../../stores/globalModals"
 interface SwapBoxProps {
   busy: boolean
   rates: Record<string, number>
@@ -45,11 +46,11 @@ export interface SwapData {
 }
 
 const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
-  const { connected } = useWallet()
+  const { connected, publicKey } = useWallet()
   const { setVisible } = useWalletModal()
   const user = useAuthStore((state) => state.user)
-  const { setShowLoginModal } = useAuthStore()
   const { addAlert } = useAlertStore()
+  const { toggleLoginModal } = useGlobalModalsStore()
 
   const [inputValue, setInputValue] = useState(0)
   const [debitCurrency, setDebitCurrency] = useState<Currency>(CURRENCIES[0])
@@ -63,6 +64,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   const [phone, setPhone] = useState<string>('')
   const [momoAccountName, setMomoAccountName] = useState<string>('')
   const [momoNetwork, setMomoNetwork] = useState<string>('MTN')
+  const [tokenBalance, setTokenBalance] = useState<number>(0)
 
   const firstCurrencyList = useMemo(() => {
     if (creditCurrency.symbol === 'GHS')  {
@@ -90,7 +92,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
 
   const handleSubmit = () => {
     if (!user) {
-      setShowLoginModal(true)
+      toggleLoginModal()
       return
     }
     
@@ -198,6 +200,13 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
     }
   }, [debitCurrency, inputValue, rates])
 
+  const insufficientBalance = useMemo(() => {
+    if (debitCurrency.symbol !== "GHS" && inputValue > tokenBalance) {
+      return true
+    }
+    return false
+  }, [debitCurrency, tokenBalance, inputValue])
+
   useEffect(() => {
     try {
       new PublicKey(creditAddress)
@@ -208,8 +217,8 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
   }, [creditAddress])
 
   return ( 
-    <div className="flex-col space-y-4">
-      <div className="flex-col space-y-3 px-6 pt-4 pb-10 w-[448px] bg-stone-700 rounded-xl shadow-md">
+    <div className="flex-col space-y-4 w-full sm:w-fit">
+      <div className="flex-col space-y-3 lg:px-6 px-4 pt-4 lg:pb-10 pb-4 sm:w-[448px] w-full bg-stone-700 rounded-xl shadow-md">
         <SwapInput 
           currencies={firstCurrencyList}
           selectedCurrency={debitCurrency!}
@@ -218,6 +227,8 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
           onValueChange={setInputValue}
           dollarValue={dollarValue}
           label={'You pay'}
+          tokenBalance={tokenBalance}
+          updateTokenBalance={setTokenBalance}
         />
         <div className="flex justify-center items-center">
           <button
@@ -237,11 +248,19 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             selectedCurrency={creditCurrency!}
             onChange={setCreditCurrency}
           />
-          <p className="text-white mr-2 text-lg">
+          <p className="text-white mr-2 text-lg truncate">
             {payoutAmount.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2})}
           </p>
         </div>
-        <p className="text-white font-bold text-sm">Payout Info</p>
+        <div className="flex flex-row items-center justify-between">
+          <p className="text-white font-bold text-sm">Payout Info</p>
+          <button
+            onClick={() => setCreditAddress(publicKey!.toBase58())}
+            className="uppercase text-white rounded-2xl px-[8px] py-[2px] border border-gray-500 text-[10px] font-semibold bg-stone-800"
+          >
+            my wallet
+          </button>
+        </div>
         <AnimatePresence>
           {creditCurrency?.name === 'Ghana Cedi' && selectedPayoutMethod === '' && (
             <PayoutMethods 
@@ -260,7 +279,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             />
           )}
           {selectedPayoutMethod === 'momo' && (
-            <MomoInput 
+            <MomoInput
               phone={phone}
               onPhoneChange={setPhone}
               name={momoAccountName}
@@ -270,7 +289,7 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
             />
           )}
           {creditCurrency?.name !== 'Ghana Cedi' && (
-            <WalletInput 
+            <WalletInput
               address={creditAddress}
               isValid={addressIsValid}
               onChange={setCreditAddress}
@@ -280,11 +299,17 @@ const SwapBox = ({ onSubmit, busy, rates }: SwapBoxProps) => {
       </div>
       <button
         onClick={handleSubmit}
-        disabled={busy}
-        className={`w-[448px] bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px] `}
+        disabled={busy || insufficientBalance}
+        className={`md:w-[448px] w-full bg-gradient-to-r ${connected || user ? 'from-blue-400 to-yellow-500 p-[1px]' : ''} rounded-lg h-[58px]`}
       >
         <div className="w-full h-full bg-black rounded-lg flex justify-center items-center">
-          {busy ? <Loading /> : <p className="text-white font-bold text-md">{!user ? 'Login' : connected ? 'Swap' : 'Connect wallet'}</p>}
+          {busy ? 
+            <Loading /> : 
+            <p 
+              className={`text-white font-bold text-md ${insufficientBalance && 'text-opacity-50'}`}
+            >
+              {!user ? 'Login' : !connected ? 'Connect wallet' : insufficientBalance ? `Insufficient ${debitCurrency.symbol}` : 'Swap'}
+            </p>}
         </div>
       </button>
     </div>

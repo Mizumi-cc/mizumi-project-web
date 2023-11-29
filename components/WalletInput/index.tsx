@@ -18,7 +18,7 @@ const WalletInput: FunctionComponent<Props> = ({
         value={address}
         placeholder="Enter wallet address"
         onChange={(e) => onChange(e.target.value)}
-        className="bg-black w-full py-4 rounded-lg text-white text-lg outline-none px-3 mb-1"
+        className="bg-black w-full xl:py-4 py-3 rounded-lg text-white xl:text-lg text-base outline-none px-3 mb-1"
       />
       <p
         className="text-green-500 font-bold text-sm ml-3"

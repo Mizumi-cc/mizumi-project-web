@@ -43,9 +43,9 @@ const VeryfyingPayment: FunctionComponent<Props> = ({ isOpen, onClose, verified 
               leaveFrom="opacity-100 scale-100"
               leaveTo="opacity-0 scale-95"
             >
-              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all h-[200px] flex flex-col items-center">
+              <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white lg:p-6 p-4 text-left align-middle shadow-xl transition-all h-[200px] flex flex-col items-center">
                 <div
-                  className="text-xl font-medium leading-6 text-gray-900 mb-10"
+                  className="text-xl font-medium leading-6 text-gray-900 lg:mb-10 mb-4"
                 >
                   {verified ? "Payment Verified" : "Verifying Payment"}
                 </div>
